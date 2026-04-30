@@ -4,7 +4,7 @@
 
 BaseDatos* BaseDatos::instancia = nullptr;
 
-BaseDatos::BaseDatos() : db(nullptr), db_path("datos/granja.db") {}
+BaseDatos::BaseDatos() : db(nullptr), db_path("datos/granja.db"), en_transaccion(false) {}
 
 BaseDatos::~BaseDatos() {
     cerrar();
@@ -423,4 +423,16 @@ CREATE TABLE IF NOT EXISTS herramientas (
     ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_kg_ves', '15000')");
     
     std::cout << "Base de datos inicializada correctamente" << std::endl;
+}
+
+void BaseDatos::iniciarTransaccion() {
+    if (!abrir()) return;
+    en_transaccion = true;
+    sqlite3_exec(db, "BEGIN TRANSACTION", nullptr, nullptr, nullptr);
+}
+
+void BaseDatos::terminarTransaccion() {
+    if (!abrir() || !en_transaccion) return;
+    sqlite3_exec(db, "COMMIT", nullptr, nullptr, nullptr);
+    en_transaccion = false;
 }

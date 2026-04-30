@@ -127,3 +127,31 @@ std::string capitalize(const std::string& s) {
     result[0] = std::toupper(result[0]);
     return result;
 }
+
+std::string sanitizarSQL(const std::string& input) {
+    std::string result;
+    for (char c : input) {
+        if (c == '\'' || c == ';' || c == '-' || c == '=' || c == '(' || c == ')') {
+            continue;
+        }
+        result += c;
+    }
+    return result;
+}
+
+bool esNumeroValido(const std::string& s) {
+    if (s.empty()) return false;
+    for (char c : s) {
+        if (!std::isdigit(c)) return false;
+    }
+    return true;
+}
+
+int parsearIdSeguro(const std::string& s) {
+    if (!esNumeroValido(s)) return -1;
+    try {
+        return std::stoi(s);
+    } catch (...) {
+        return -1;
+    }
+}

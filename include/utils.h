@@ -24,4 +24,8 @@ std::string boolToString(bool b);
 bool isNotEmpty(const std::string& s);
 std::string capitalize(const std::string& s);
 
+std::string sanitizarSQL(const std::string& input);
+bool esNumeroValido(const std::string& s);
+int parsearIdSeguro(const std::string& s);
+
 #endif // UTILS_H

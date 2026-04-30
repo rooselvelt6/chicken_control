@@ -10,6 +10,7 @@ private:
     sqlite3* db;
     static BaseDatos* instancia;
     std::string db_path;
+    bool en_transaccion;
 
     BaseDatos();
     ~BaseDatos();
@@ -25,6 +26,10 @@ public:
     Configuracion getConfiguracion();
     void inicializar();
     void actualizarSchema();
+    
+    // Transacciones para mejor rendimiento
+    void iniciarTransaccion();
+    void terminarTransaccion();
 };
 
 #endif // BASE_DATOS_H
