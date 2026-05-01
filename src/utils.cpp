@@ -169,7 +169,7 @@ std::string sanitizarSQL(const std::string& input) {
 }
 
 std::string sanitizarInput(const std::string& input, int maxLen) {
-    if (input.empty()) return "";
+    if (input.empty() || maxLen <= 0) return "";
 
     std::string result;
     result.reserve(input.size());
@@ -182,7 +182,7 @@ std::string sanitizarInput(const std::string& input, int maxLen) {
         }
     }
 
-    if (result.length() > maxLen && maxLen > 0) {
+    if (result.length() > maxLen) {
         result = result.substr(0, maxLen);
     }
 

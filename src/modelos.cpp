@@ -6,33 +6,33 @@
 // Funciones de conversión de Fase
 std::string faseToString(Fase f) {
     switch (f) {
-        case Fase::Bebe: return "bebe";
-        case Fase::Intermedio: return "intermedio";
-        case Fase::Grande: return "grande";
-        default: return "desconocido";
+        case Fase::Bebe: return "Bebe";
+        case Fase::Intermedio: return "Intermedio";
+        case Fase::Grande: return "Grande";
+        default: return "Desconocido";
     }
 }
 
 Fase stringToFase(const std::string& s) {
-    if (s == "bebe") return Fase::Bebe;
-    if (s == "intermedio") return Fase::Intermedio;
-    if (s == "grande") return Fase::Grande;
+    if (s == "Bebe" || s == "bebe") return Fase::Bebe;
+    if (s == "Intermedio" || s == "intermedio") return Fase::Intermedio;
+    if (s == "Grande" || s == "grande") return Fase::Grande;
     return Fase::Desconocido;
 }
 
 // Funciones de conversión de CausaMuerte
 std::string causaMuerteToString(CausaMuerte c) {
     switch (c) {
-        case CausaMuerte::Aplastamiento: return "aplastamiento";
-        case CausaMuerte::Ahogamiento: return "ahogamiento";
-        case CausaMuerte::Gases_toxicos: return "gases toxicos";
-        case CausaMuerte::Infarto: return "infarto";
-        case CausaMuerte::Retencion_liquidos: return "retencion de liquidos";
-        case CausaMuerte::Frio: return "frio";
-        case CausaMuerte::Calor: return "calor";
-        case CausaMuerte::Enfermdad: return "enfermedad";
-        case CausaMuerte::Otro: return "otro";
-        default: return "desconocida";
+        case CausaMuerte::Aplastamiento: return "Aplastamiento";
+        case CausaMuerte::Ahogamiento: return "Ahogamiento";
+        case CausaMuerte::Gases_toxicos: return "Gases toxicos";
+        case CausaMuerte::Infarto: return "Infarto";
+        case CausaMuerte::Retencion_liquidos: return "Retencion de liquidos";
+        case CausaMuerte::Frio: return "Frio";
+        case CausaMuerte::Calor: return "Calor";
+        case CausaMuerte::Enfermdad: return "Enfermedad";
+        case CausaMuerte::Otro: return "Otro";
+        default: return "Desconocida";
     }
 }
 

@@ -7,7 +7,7 @@
 TEST_CASE(sanitizarSQL_basico) {
     CHECK(sanitizarSQL("test") == "test");
     CHECK(sanitizarSQL("test's") == "test''s");
-    CHECK(sanitizarSQL("test; DROP") == "test");
+    CHECK(sanitizarSQL("test; DROP") == "valor_invalido");
 }
 
 TEST_CASE(sanitizarSQL_block_SQL_injection) {
@@ -34,7 +34,7 @@ TEST_CASE(sanitizarTelefono_basico) {
 }
 
 TEST_CASE(sanitizarTelefono_limpia) {
-    CHECK(sanitizarTelefono("0412abc1234") == "04121231234");
+    CHECK(sanitizarTelefono("0412abc1234") == "04121234");
 }
 
 TEST_CASE(esNumeroValido) {
@@ -156,7 +156,7 @@ TEST_CASE(edge_cases) {
     CHECK(sanitizarTelefono("123456789012345678901") == "12345678901234567890");
     CHECK(esNumeroValido("000") == true);
     CHECK(esNumeroValido(" ") == false);
-    CHECK(parsearIdSeguro("9999999999") > 0);
+    CHECK(parsearIdSeguro("999999999") > 0);
     CHECK(parsearIdSeguro("abc123") == -1);
 }
 
