@@ -140,7 +140,7 @@ instalar_sistema() {
     echo -e "${AMARILLO}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 
     if [ "$EUID" -ne 0 ]; then
-        echo -e "${AMARILLO}⚠${NC} Para instalar globally necesita ejecutar como root:"
+        echo -e "${AMARILLO}⚠${NC} Para instalar globalmente necesita ejecutar como root:"
         echo "   sudo ./instalar.sh --install"
         return
     fi
@@ -150,6 +150,18 @@ instalar_sistema() {
 
     echo -e "${VERDE}✓${NC} Instalado en /usr/local/bin/granja"
     echo -e "${VERDE}✓${NC} Ahora puede ejecutar: ${CYAN}granja ayuda${NC}"
+}
+
+confirmar() {
+    local mensaje="$1"
+    echo -e "${AMARILLO}⚠${NC} $mensaje [S/N]: "
+    read -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[SsYy]$ ]]; then
+        return 0
+    else
+        return 1
+    fi
 }
 
 mostrar_ayuda() {
@@ -178,6 +190,54 @@ mostrar_ayuda() {
     echo ""
 }
 
+actualizar_sistema() {
+    echo ""
+    echo -e "${AMARILLO}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}  🔄 ACTUALIZANDO SISTEMA${NC}"
+    echo -e "${AMARILLO}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    echo -e "${AZUL}▸${NC} Verificando cambios en Git..."
+    if [ -d ".git" ]; then
+        git fetch origin main
+        LOCAL=$(git rev-parse HEAD)
+        REMOTE=$(git rev-parse origin/main)
+
+        if [ "$LOCAL" != "$REMOTE" ]; then
+            echo -e "${AMARILLO}⚠${NC} Hay actualizaciones disponibles"
+            echo -e "   ${AZUL}Local:${NC}  $LOCAL"
+            echo -e "   ${AZUL}Remote:${NC} $REMOTE"
+            if confirmar "¿Descargar actualizaciones?"; then
+                git pull origin main
+                echo -e "${VERDE}✓${NC} Cambios descargados"
+            fi
+        else
+            echo -e "${VERDE}✓${NC} Sistema ya está actualizado"
+        fi
+    else
+        echo -e "${AMARILLO}⚠${NC} No es un repositorio Git, compilando directamente"
+    fi
+
+    echo ""
+    echo -e "${AZUL}▸${NC} Limpiando compilación anterior..."
+    make clean
+
+    echo ""
+    echo -e "${AZUL}▸${NC} Compilando nueva versión..."
+    compilar_proyecto
+
+    if [ "$SUDO" != "" ]; then
+        echo ""
+        if confirmar "¿Actualizar instalación global?"; then
+            instalar_sistema
+        fi
+    fi
+
+    echo ""
+    echo -e "${VERDE}════════════════════════════════════════════════════════════${NC}"
+    echo -e "${VERDE}  ✓ SISTEMA ACTUALIZADO A LA ÚLTIMA VERSIÓN${NC}"
+    echo -e "${VERDE}════════════════════════════════════════════════════════════${NC}"
+}
+
 menu_interactivo() {
     while true; do
         clear
@@ -185,12 +245,13 @@ menu_interactivo() {
         echo ""
         echo -e "${BLANCO}  Seleccione una opción:${NC}"
         echo ""
-        echo -e "  ${CYAN}1)${NC} Instalar/Actualizar sistema"
-        echo -e "  ${CYAN}2)${NC} Instalar globalmente (requiere root)"
-        echo -e "  ${CYAN}3)${NC} Cargar datos de ejemplo"
-        echo -e "  ${CYAN}4)${NC} Ver ayuda rápida"
-        echo -e "  ${CYAN}5)${NC} Ejecutar interfaz visual"
-        echo -e "  ${CYAN}6)${NC} Salir"
+        echo -e "  ${CYAN}1)${NC} Instalar sistema (primera vez)"
+        echo -e "  ${CYAN}2)${NC} 🔄 Actualizar sistema (recompilar)"
+        echo -e "  ${CYAN}3)${NC} Instalar globalmente (requiere root)"
+        echo -e "  ${CYAN}4)${NC} Cargar datos de ejemplo"
+        echo -e "  ${CYAN}5)${NC} Ver ayuda rápida"
+        echo -e "  ${CYAN}6)${NC} Ejecutar interfaz visual"
+        echo -e "  ${CYAN}7)${NC} Salir"
         echo ""
         read -p "  Opción: " opcion
 
@@ -206,21 +267,25 @@ menu_interactivo() {
                 read -p "Presione Enter para continuar..."
                 ;;
             2)
-                instalar_sistema
+                actualizar_sistema
                 read -p "Presione Enter para continuar..."
                 ;;
             3)
-                ./build/granja ejemplo
+                instalar_sistema
                 read -p "Presione Enter para continuar..."
                 ;;
             4)
-                mostrar_ayuda
+                ./build/granja ejemplo
                 read -p "Presione Enter para continuar..."
                 ;;
             5)
-                ./build/granja ui
+                mostrar_ayuda
+                read -p "Presione Enter para continuar..."
                 ;;
             6)
+                ./build/granja ui
+                ;;
+            7)
                 echo ""
                 echo -e "${CYAN}¡Gracias por usar Chicken Control! 🐔${NC}"
                 exit 0
@@ -242,17 +307,21 @@ if [ "$1" == "--install" ]; then
     compilar_proyecto
     instalar_sistema
     mostrar_ayuda
+elif [ "$1" == "--update" ] || [ "$1" == "-u" ]; then
+    actualizar_sistema
 elif [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     echo -e "${CYAN}Uso:${NC} $0 [opciones]"
     echo ""
     echo "Opciones:"
     echo "  --install    Instalar y configurar el sistema"
+    echo "  --update    Actualizar sistema (recompilar)"
     echo "  --help       Mostrar esta ayuda"
     echo "  (sin args)  Modo interactivo"
     echo ""
     echo "Ejemplos:"
     echo "  $0                    # Modo interactivo"
     echo "  sudo $0 --install     # Instalar globally"
+    echo "  ./instalar.sh --update # Actualizar y recompilar"
 else
     menu_interactivo
 fi
