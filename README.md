@@ -354,8 +354,8 @@ Este proyecto está bajo la Licencia MIT - ver [LICENSE](LICENSE) para detalles.
 
 ## 👨‍💻 AUTOR
 
-**Rooselvelt Angulo**
-- GitHub: [@rooselvelt6](https://github.com/rooselvelt6)
+**@rooselvelt6**
+- GitHub: [rooselvelt6](https://github.com/rooselvelt6)
 
 ---
 
