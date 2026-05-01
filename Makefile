@@ -37,15 +37,26 @@ install: build
 	cp $(TARGET) /usr/local/bin/granja
 
 help:
-	@echo "Sistema de Control de Granja de Pollos v2.0 - C++"
 	@echo ""
-	@echo "Para compilar: make build"
-	@echo "Para ejecutar: make run"
-	@echo "Para limpiar: make clean"
-	@echo "Para pruebas: make benchmark"
+	@echo "╔═══════════════════════════════════════════════════════════╗"
+	@echo "║          🐔 CHICKEN CONTROL v3.0 - C++                    ║"
+	@echo "╚═══════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "Antes de compilar, asegurese de tener sqlite3 instalado:"
-	@echo "  sudo dnf install sqlite sqlite-devel"
+	@echo "Usage:"
+	@echo "  make build          - Compilar el proyecto"
+	@echo "  make run            - Ejecutar el sistema"
+	@echo "  make clean          - Limpiar archivos de compilación"
+	@echo "  make install        - Instalar globally (requiere root)"
+	@echo "  make help           - Mostrar esta ayuda"
+	@echo ""
+	@echo "Instalación automática:"
+	@echo "  ./instalar.sh                - Modo interactivo"
+	@echo "  sudo ./instalar.sh --install - Instalar y configurar"
+	@echo ""
+	@echo "Requisitos:"
+	@echo "  Ubuntu/Debian: sudo apt install g++ make libsqlite3-dev libncurses-dev"
+	@echo "  Fedora/RHEL:   sudo dnf install gcc gcc-c++ make sqlite sqlite-devel ncurses-devel"
+	@echo "  Arch Linux:    sudo pacman -S base-devel sqlite ncurses"
 
 BENCHMARK_SRC = src/benchmark.cpp src/modelos.cpp src/utils.cpp src/base_datos.cpp \
                 src/lotes.cpp src/animales.cpp src/alimentacion.cpp src/ventas.cpp \
