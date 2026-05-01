@@ -320,6 +320,54 @@ void BaseDatos::actualizarSchema() {
             observaciones TEXT
         ))",
 
+        // Empleados
+        R"(CREATE TABLE IF NOT EXISTS empleados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            cedula TEXT UNIQUE,
+            telefono TEXT,
+            direccion TEXT,
+            cargo TEXT DEFAULT 'trabajador',
+            tipo_contrato TEXT DEFAULT 'fijo',
+            salario REAL DEFAULT 0,
+            turno TEXT DEFAULT 'matutino',
+            activo INTEGER DEFAULT 1,
+            fecha_ingreso TEXT
+        ))",
+
+        // Asistencia de empleados
+        R"(CREATE TABLE IF NOT EXISTS asistencia_empleados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            empleado_id INTEGER REFERENCES empleados(id),
+            fecha TEXT NOT NULL,
+            presente INTEGER DEFAULT 1,
+            hora_entrada TEXT,
+            hora_salida TEXT,
+            horas_extras INTEGER DEFAULT 0
+        ))",
+
+        // Temperatura por corral
+        R"(CREATE TABLE IF NOT EXISTS temperatura_registros (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            corral_id INTEGER REFERENCES corrales(id),
+            temperatura REAL DEFAULT 0,
+            humedad REAL DEFAULT 0,
+            fecha TEXT NOT NULL,
+            observaciones TEXT
+        ))",
+
+        // Consumo de servicios
+        R"(CREATE TABLE IF NOT EXISTS servicios_consumo (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lote_id INTEGER REFERENCES lotes(id),
+            tipo TEXT NOT NULL,
+            cantidad REAL DEFAULT 0,
+            costo_unitario REAL DEFAULT 0,
+            costo_total REAL DEFAULT 0,
+            fecha TEXT NOT NULL,
+            descripcion TEXT
+        ))",
+
         // Agregar corral_id a lotes
         "ALTER TABLE lotes ADD COLUMN corral_id INTEGER REFERENCES corrales(id)"
     };
