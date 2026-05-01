@@ -1,4 +1,4 @@
-# 🐔 CHICKEN CONTROL v3.1
+# 🐔 CHICKEN CONTROL v3.2
 ## Sistema Inteligente de Gestión Avícola - Nivel 10/10
 
 <div align="center">
@@ -7,7 +7,7 @@
 ![SQLite](https://img.shields.io/badge/SQLite-3-brightgreen?style=for-the-badge&logo=sqlite)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Linux-orange?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-3.1-purple?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-3.2-purple?style=for-the-badge)
 ![Tests](https://img.shields.io/badge/Tests-73-green?style=for-the-badge)
 ![Security](https://img.shields.io/badge/Security-10%2F10-brightgreen?style=for-the-badge)
 
@@ -54,8 +54,11 @@
 | 🌡️ **Control de Temperatura** | ✅ | Monitoreo por corral, alertas críticas |
 | 💧 **Consumo de Servicios** | ✅ | Agua, luz, gas por lote |
 | 📦 **Contenedores** | ✅ | Refrigeración, almacenamiento |
-| 🔄 **Beneficio** | ✅ | Registro de matanza, manual/automático |
+| 🔪 **Beneficio** | ✅ | Registro de matanza, manual/automático |
 | 💾 **Backup/Restore** | ✅ | Export/Import JSON |
+| 💵 **Módulo Financiero** | ✅ **NEW** | Estado resultados, flujo caja, costos por lote |
+| 📊 **Gráficos ASCII** | ✅ **NEW** | Barras, pastel, histogramas, comparativas |
+| 📝 **Reportes TXT** | ✅ **NEW** | Exportar a texto plano, dashboard, métricas |
 
 ### 🚀 Funciones Avanzadas
 
@@ -66,6 +69,8 @@
 - ✅ **Paginación** - Tablas grandes con navegación
 - ✅ **Export/Import JSON** - Backup completo del sistema
 - ✅ **Todo en USD** - Moneda internacional
+- ✅ **Gráficos ASCII** - Visualización en terminal sin dependencias
+- ✅ **Reportes TXT** - Exportación portable a texto plano
 
 ---
 
@@ -228,6 +233,11 @@ make test-run
 | `./granja servicio agregar <lote> <tipo> <cant> <costo>` | Registrar servicio |
 | `./granja dashboard` | Ver panel de control |
 | `./granja metricas lote <id>` | Ver métricas |
+| `./granja financiero estado <ini> <fin>` | Estado de resultados |
+| `./granja financiero flujo <año>` | Flujo de caja |
+| `./granja grafico ventas-mensuales <año>` | Gráfico ventas por mes |
+| `./granja grafico crecimiento <lote>` | Gráfico crecimiento |
+| `./granja reporte txt dashboard <archivo>` | Exportar dashboard a TXT |
 
 ### Ejemplo Completo de Uso
 
@@ -267,6 +277,15 @@ make test-run
 
 # 12. Ver métricas
 ./granja metricas lote 1
+
+# 13. Ver estado financiero
+./granja financiero estado 2024-01-01 2024-12-31
+
+# 14. Ver gráfico de ventas mensuales
+./granja grafico ventas-mensuales 2024
+
+# 15. Exportar dashboard a TXT
+./granja reporte txt dashboard dashboard.txt
 ```
 
 ---
@@ -284,13 +303,19 @@ chicken_control/
 │   ├── servicios.h          # Servicios públicos
 │   ├── facturacion.h        # Facturación
 │   ├── contenedores.h        # Almacenamiento
-│   └── ... (15+ módulos)
+│   ├── financiero.h         # ✅ NEW: Módulo financiero
+│   ├── graficos.h           # ✅ NEW: Gráficos ASCII
+│   ├── reportes_txt.h       # ✅ NEW: Reportes TXT
+│   └── ... (18+ módulos)
 │
 ├── src/                      # Implementación (.cpp)
 │   ├── main.cpp             # Punto de entrada
 │   ├── dashboard.cpp        # Dashboard visual
 │   ├── empleados.cpp       # Gestión de empleados
-│   └── ... (20+ archivos)
+│   ├── financiero.cpp      # ✅ NEW: Módulo financiero
+│   ├── graficos.cpp        # ✅ NEW: Gráficos ASCII
+│   ├── reportes_txt.cpp    # ✅ NEW: Reportes TXT
+│   └── ... (23+ archivos)
 │
 ├── build/                    # Executable compilado
 ├── datos/                   # Base de datos SQLite
