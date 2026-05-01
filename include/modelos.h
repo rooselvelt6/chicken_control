@@ -401,8 +401,7 @@ struct Herramienta {
 };
 
 struct Configuracion {
-    double precio_dolar = 4340.0;
-    double precio_kg_ves = 15000.0;
+    double precio_kg = 2.50;
 };
 
 // ==================== MÉTRICAS ====================

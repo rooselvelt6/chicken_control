@@ -54,8 +54,8 @@ Comandos principales:
   beneficio stats         - Ver estadisticas
 
   config            - Configurar parámetros
-    set-dolar <valor>   Establecer precio del dólar
-    get-dolar          Mostrar precio actual del dólar
+    set-precio <valor>   Establecer precio por kg (USD)
+    get-precio          Mostrar precio actual por kg
 
   lote              - Gestionar lotes
     nuevo <num> [--fecha YYYY-MM-DD] [--duracion dias]
@@ -100,8 +100,8 @@ Comandos principales:
 Ejemplos:
   ./granja ayuda
   ./granja ejemplo
-  ./granja config set-dolar 4340
-  ./granja config get-dolar
+  ./granja config set-precio 2.50
+  ./granja config get-precio
   ./granja lote nuevo 1 --fecha 2024-01-01
   ./granja animal agregar 1 100 --precio 1.0
   ./granja animal muerte 1 aplastamiento 5
@@ -167,18 +167,18 @@ int main(int argc, char* argv[]) {
     }
     else if (cmd == "config") {
         if (argc < 3) {
-            std::cout << "Uso: config set-dolar <valor> | get-dolar" << std::endl;
+            std::cout << "Uso: config set-precio <valor> | get-precio" << std::endl;
             return 0;
         }
         std::string sub = argv[2];
-        if (sub == "set-dolar" && argc > 3) {
+        if (sub == "set-precio" && argc > 3) {
             double valor = std::stod(argv[3]);
-            db->setConfigValue("precio_dolar", std::to_string(valor));
-            std::cout << "Precio del dólar establecido: Bs. " << std::fixed << std::setprecision(2) << valor << std::endl;
+            db->setConfigValue("precio_kg", std::to_string(valor));
+            std::cout << "Precio por kg establecido: USD " << std::fixed << std::setprecision(2) << valor << std::endl;
         }
-        else if (sub == "get-dolar") {
+        else if (sub == "get-precio") {
             Configuracion c = db->getConfiguracion();
-            std::cout << "Precio del dólar actual: Bs. " << std::fixed << std::setprecision(2) << c.precio_dolar << std::endl;
+            std::cout << "Precio por kg actual: USD " << std::fixed << std::setprecision(2) << c.precio_kg << std::endl;
         }
     }
     else if (cmd == "lote") {
@@ -352,7 +352,7 @@ int main(int argc, char* argv[]) {
             int id = std::stoi(argv[3]);
             double monto = std::stod(argv[4]);
             Ventas::registrarPago(id, monto);
-            std::cout << "Pago de Bs. " << std::fixed << std::setprecision(2) << monto << " registrado" << std::endl;
+            std::cout << "Pago de USD " << std::fixed << std::setprecision(2) << monto << " registrado" << std::endl;
         }
         else if (sub == "deudas") {
             Reportes::reporteDeudas();
@@ -395,9 +395,9 @@ int main(int argc, char* argv[]) {
         }
         else if (sub == "listar") {
             for (auto& h : Herramientas::listar()) {
-                std::cout << "  " << h.id << ": " << h.nombre << " - Cant: " << h.cantidad << " - Bs. " << std::fixed << std::setprecision(2) << h.precio_unitario << " c/u" << std::endl;
+                std::cout << "  " << h.id << ": " << h.nombre << " - Cant: " << h.cantidad << " - USD " << std::fixed << std::setprecision(2) << h.precio_unitario << " c/u" << std::endl;
             }
-            std::cout << "Total: Bs. " << std::fixed << std::setprecision(2) << Herramientas::totalInvertido() << std::endl;
+            std::cout << "Total: USD " << std::fixed << std::setprecision(2) << Herramientas::totalInvertido() << std::endl;
         }
     }
     else if (cmd == "reporte") {
@@ -606,7 +606,7 @@ int main(int argc, char* argv[]) {
         }
         else if (sub == "listar") {
             for (auto& f : Facturacion::listarFacturas()) {
-                std::cout << f.numero_factura << " | " << f.cliente_nombre << " | Bs. " << std::fixed << std::setprecision(2) << f.total << " | " << (f.anulada ? "ANULADA" : "ACTIVA") << std::endl;
+                std::cout << f.numero_factura << " | " << f.cliente_nombre << " | USD " << std::fixed << std::setprecision(2) << f.total << " | " << (f.anulada ? "ANULADA" : "ACTIVA") << std::endl;
             }
         }
         else if (sub == "anular" && argc > 3) {

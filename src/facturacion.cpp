@@ -190,11 +190,11 @@ void Facturacion::mostrarFactura(int id) {
     std::cout << "DETALLE:" << std::endl;
     std::cout << "  Cantidad pollos: " << f.cantidad_pollos << std::endl;
     std::cout << "  Peso total: " << std::fixed << std::setprecision(2) << f.peso_total << " kg" << std::endl;
-    std::cout << "  Precio unitario: Bs. " << f.precio_unitario << std::endl;
+    std::cout << "  Precio unitario: USD " << f.precio_unitario << std::endl;
     std::cout << "----------------------------------------" << std::endl;
-    std::cout << "  Subtotal:    Bs. " << std::fixed << std::setprecision(2) << f.subtotal << std::endl;
-    std::cout << "  IVA (16%):   Bs. " << std::fixed << std::setprecision(2) << f.iva << std::endl;
-    std::cout << "  TOTAL:       Bs. " << std::fixed << std::setprecision(2) << f.total << std::endl;
+    std::cout << "  Subtotal:    USD " << std::fixed << std::setprecision(2) << f.subtotal << std::endl;
+    std::cout << "  IVA (16%):   USD " << std::fixed << std::setprecision(2) << f.iva << std::endl;
+    std::cout << "  TOTAL:       USD " << std::fixed << std::setprecision(2) << f.total << std::endl;
     std::cout << "========================================" << std::endl;
     if (f.anulada) {
         std::cout << "           *** ANULADA ***" << std::endl;
@@ -230,11 +230,11 @@ void Facturacion::exportarFacturaPDF(int id, const std::string& filename) {
     file << "DETALLE:\n";
     file << "  Cantidad pollos: " << f.cantidad_pollos << "\n";
     file << "  Peso total: " << std::fixed << std::setprecision(2) << f.peso_total << " kg\n";
-    file << "  Precio unitario: Bs. " << f.precio_unitario << "\n";
+    file << "  Precio unitario: USD " << f.precio_unitario << "\n";
     file << "----------------------------------------\n";
-    file << "  Subtotal:    Bs. " << std::fixed << std::setprecision(2) << f.subtotal << "\n";
-    file << "  IVA (16%):   Bs. " << std::fixed << std::setprecision(2) << f.iva << "\n";
-    file << "  TOTAL:       Bs. " << std::fixed << std::setprecision(2) << f.total << "\n";
+    file << "  Subtotal:    USD " << std::fixed << std::setprecision(2) << f.subtotal << "\n";
+    file << "  IVA (16%):   USD " << std::fixed << std::setprecision(2) << f.iva << "\n";
+    file << "  TOTAL:       USD " << std::fixed << std::setprecision(2) << f.total << "\n";
     file << "========================================\n";
     file.close();
     

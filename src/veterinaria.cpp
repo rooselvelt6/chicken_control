@@ -168,7 +168,7 @@ void Veterinaria::imprimirVacunas() {
     std::cout << "=== VACUNAS REGISTRADAS ===" << std::endl;
     for (auto& v : listas) {
         std::cout << v.id << ": " << v.nombre << " | Día: " << v.aplicacion_dias 
-                  << " | Costo: Bs. " << std::fixed << std::setprecision(2) << v.costo;
+                  << " | Costo: USD " << std::fixed << std::setprecision(2) << v.costo;
         if (!v.nombre_proveedor.empty()) std::cout << " | Proveedor: " << v.nombre_proveedor;
         std::cout << std::endl;
     }
@@ -179,7 +179,7 @@ void Veterinaria::imprimirMedicamentos() {
     std::cout << "=== MEDICAMENTOS REGISTRADOS ===" << std::endl;
     for (auto& m : listas) {
         std::cout << m.id << ": " << m.nombre << " | Categoría: " << m.categoria 
-                  << " | Stock: " << m.stock << " | Precio: Bs. " << std::fixed << std::setprecision(2) << m.precio;
+                  << " | Stock: " << m.stock << " | Precio: USD " << std::fixed << std::setprecision(2) << m.precio;
         std::cout << std::endl;
     }
 }

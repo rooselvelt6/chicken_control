@@ -195,7 +195,7 @@ void Animales::imprimirResumen(int lote_id) {
     double inversion = totalInvertido(lote_id);
     double perdidas = calcularPerdidasMuertes(lote_id);
     std::cout << "  Total comprados: " << total << std::endl;
-    std::cout << "  Muertes: " << muertes << " (Bs. " << std::fixed << std::setprecision(2) << perdidas << ")" << std::endl;
+    std::cout << "  Muertes: " << muertes << " (USD " << std::fixed << std::setprecision(2) << perdidas << ")" << std::endl;
     std::cout << "  Sacrificados: " << sacrificados << " (" << std::fixed << std::setprecision(2) << kg_sacrificados << " kg)" << std::endl;
-    std::cout << "  Inversión en animales: Bs. " << std::fixed << std::setprecision(2) << inversion << std::endl;
+    std::cout << "  Inversión en animales: USD " << std::fixed << std::setprecision(2) << inversion << std::endl;
 }

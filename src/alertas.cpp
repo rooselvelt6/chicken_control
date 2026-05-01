@@ -63,7 +63,7 @@ void Alertas::verificarDeudas(std::vector<Alerta>& alertas) {
     
     if (cantidad > 0) {
         std::ostringstream oss;
-        oss << cantidad << " ventas pendientes por Bs. " << std::fixed << std::setprecision(2) << totalDeuda;
+        oss << cantidad << " ventas pendientes por USD " << std::fixed << std::setprecision(2) << totalDeuda;
         alertas.push_back({"Deudas", oss.str(), 2});
     }
 }

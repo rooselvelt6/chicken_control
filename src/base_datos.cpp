@@ -88,14 +88,9 @@ void BaseDatos::setConfigValue(const std::string& clave, const std::string& valo
 Configuracion BaseDatos::getConfiguracion() {
     Configuracion config;
     try {
-        config.precio_dolar = std::stod(getConfigValue("precio_dolar"));
+        config.precio_kg = std::stod(getConfigValue("precio_kg"));
     } catch (...) {
-        config.precio_dolar = 4340.0;
-    }
-    try {
-        config.precio_kg_ves = std::stod(getConfigValue("precio_kg_ves"));
-    } catch (...) {
-        config.precio_kg_ves = 15000.0;
+        config.precio_kg = 2.50;
     }
     return config;
 }
@@ -541,8 +536,7 @@ CREATE TABLE IF NOT EXISTS herramientas (
     crearIndices();
     
     // Insertar configuración inicial
-    ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_dolar', '4340')");
-    ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_kg_ves', '15000')");
+    ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_kg', '2.50')");
     
     std::cout << "Base de datos inicializada correctamente" << std::endl;
 }

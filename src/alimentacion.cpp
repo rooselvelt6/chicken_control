@@ -175,7 +175,7 @@ double Alimentacion::totalInvertido(int lote_id) { return totalConsumo(lote_id).
 void Alimentacion::imprimirInventario() {
     std::cout << "=== Inventario de Alimentos ===" << std::endl;
     for (auto& a : listar()) {
-        std::cout << "  " << a.nombre << " (" << faseToString(a.fase) << ") - Inventario: " << a.inventario << " sacks - Bs. " << std::fixed << std::setprecision(2) << a.precio_unitario << "/saco" << std::endl;
+        std::cout << "  " << a.nombre << " (" << faseToString(a.fase) << ") - Inventario: " << a.inventario << " sacks - USD " << std::fixed << std::setprecision(2) << a.precio_unitario << "/saco" << std::endl;
     }
 }
 

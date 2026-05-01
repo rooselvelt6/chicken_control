@@ -97,14 +97,14 @@ void Metricas::imprimirMetricasLote(int lote_id) {
     std::cout << "(ideal: 1.5 - 1.8)" << std::endl << std::endl;
     
     std::cout << "--- COSTOS ---" << std::endl;
-    std::cout << "Animales: Bs. " << std::fixed << std::setprecision(2) << m.costo_animales << std::endl;
-    std::cout << "Alimento: Bs. " << m.costo_alimento << std::endl;
-    std::cout << "TOTAL: Bs. " << m.costo_total << std::endl;
-    std::cout << "Costo por kg: Bs. " << m.costo_por_kg << std::endl << std::endl;
+    std::cout << "Animales: USD " << std::fixed << std::setprecision(2) << m.costo_animales << std::endl;
+    std::cout << "Alimento: USD " << m.costo_alimento << std::endl;
+    std::cout << "TOTAL: USD " << m.costo_total << std::endl;
+    std::cout << "Costo por kg: USD " << m.costo_por_kg << std::endl << std::endl;
     
     std::cout << "--- VENTAS ---" << std::endl;
-    std::cout << "Ingreso: Bs. " << m.ingreso_ventas << std::endl;
-    std::cout << "Ganancia: Bs. " << m.ganancia << std::endl;
+    std::cout << "Ingreso: USD " << m.ingreso_ventas << std::endl;
+    std::cout << "Ganancia: USD " << m.ganancia << std::endl;
     std::cout << "Rentabilidad: " << std::setprecision(1) << m.rentabilidad_porcentaje << "%" << std::endl;
 }
 
@@ -128,7 +128,7 @@ void Metricas::dashboardGeneral() {
     std::cout << std::endl;
     std::cout << "--- RESUMEN ---" << std::endl;
     std::cout << "Animales en sistema: " << total_animales << std::endl;
-    std::cout << "Inversión total: Bs. " << std::fixed << std::setprecision(2) << total_inversion << std::endl;
+    std::cout << "Inversión total: USD " << std::fixed << std::setprecision(2) << total_inversion << std::endl;
     std::cout << "Muertes totales: " << total_muertes << std::endl;
     if (total_animales > 0) {
         std::cout << "Tasa mortalidad: " << std::setprecision(2) << (total_muertes * 100.0 / total_animales) << "%" << std::endl;
@@ -161,8 +161,8 @@ void Metricas::reporteCostos(int lote_id) {
     
     printHeader("REPORTE DE COSTOS - LOTE " + std::to_string(lote_id));
     
-    std::cout << "Costo animales: Bs. " << std::fixed << std::setprecision(2) << m.costo_animales << std::endl;
-    std::cout << "Costo alimento: Bs. " << m.costo_alimento << std::endl;
-    std::cout << "Costo total: Bs. " << m.costo_total << std::endl;
-    std::cout << "Costo por kg producido: Bs. " << m.costo_por_kg << std::endl;
+    std::cout << "Costo animales: USD " << std::fixed << std::setprecision(2) << m.costo_animales << std::endl;
+    std::cout << "Costo alimento: USD " << m.costo_alimento << std::endl;
+    std::cout << "Costo total: USD " << m.costo_total << std::endl;
+    std::cout << "Costo por kg producido: USD " << m.costo_por_kg << std::endl;
 }

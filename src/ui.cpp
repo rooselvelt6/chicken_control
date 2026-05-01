@@ -942,8 +942,7 @@ int menuReportes() {
 int menuConfiguracion() {
     std::vector<std::string> opciones = {
         "Ver Configuracion",
-        "Actualizar Precio Dolar",
-        "Actualizar Precio KG VES",
+        "Actualizar Precio KG",
         "Exportar Datos (JSON)",
         "Importar Datos (JSON)",
         "Optimizar Base de Datos",
@@ -957,7 +956,7 @@ int menuConfiguracion() {
         dibujarMarco("⚙️ Configuracion");
         int sel = selectorLista(opciones, "Configuracion");
 
-        if (sel == -1 || sel == 8) {
+        if (sel == -1 || sel == 7) {
             return 0;
         } else if (sel == 0) {
             clear();
@@ -965,26 +964,16 @@ int menuConfiguracion() {
             BaseDatos* db = BaseDatos::getInstancia();
             Configuracion c = db->getConfiguracion();
             std::ostringstream oss;
-            oss << "Precio Dolar: Bs. " << std::fixed << std::setprecision(2) << c.precio_dolar << "\n";
-            oss << "Precio KG VES: Bs. " << std::fixed << std::setprecision(2) << c.precio_kg_ves;
+            oss << "Precio por kg (USD): " << std::fixed << std::setprecision(2) << c.precio_kg << "\n";
             mostrarMensaje("Configuracion", oss.str());
         } else if (sel == 1) {
             clear();
-            dibujarMarco("Actualizar Precio Dolar");
-            double nuevoPrecio = inputDouble("Nuevo precio del dolar", 1.0, 100000.0);
-            if (nuevoPrecio > 0) {
-                BaseDatos* db = BaseDatos::getInstancia();
-                db->setConfigValue("precio_dolar", std::to_string(nuevoPrecio));
-                mostrarMensaje("Exito", ("Precio actualizado a Bs. " + std::to_string(nuevoPrecio)).c_str());
-            }
-        } else if (sel == 2) {
-            clear();
-            dibujarMarco("Actualizar Precio KG VES");
+            dibujarMarco("Actualizar Precio KG");
             double nuevoPrecio = inputDouble("Nuevo precio por kg", 1.0, 100000.0);
             if (nuevoPrecio > 0) {
                 BaseDatos* db = BaseDatos::getInstancia();
-                db->setConfigValue("precio_kg_ves", std::to_string(nuevoPrecio));
-                mostrarMensaje("Exito", ("Precio actualizado a Bs. " + std::to_string(nuevoPrecio)).c_str());
+                db->setConfigValue("precio_kg", std::to_string(nuevoPrecio));
+                mostrarMensaje("Exito", ("Precio actualizado a USD " + std::to_string(nuevoPrecio)).c_str());
             }
         } else if (sel == 3) {
             clear();
