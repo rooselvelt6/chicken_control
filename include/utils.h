@@ -16,7 +16,6 @@ std::string floatListToString(const std::vector<float>& lista);
 std::vector<float> stringToFloatList(const std::string& s);
 std::string stringListToString(const std::vector<std::string>& lista);
 std::vector<std::string> stringToStringList(const std::string& s);
-double calcularPrecioUSD(double precio_ves, double precio_dolar);
 void printSeparator();
 void printSeparatorLong();
 void printHeader(const std::string& titulo);

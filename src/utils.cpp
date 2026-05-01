@@ -93,10 +93,6 @@ std::vector<std::string> stringToStringList(const std::string& s) {
     return result;
 }
 
-double calcularPrecioUSD(double precio_ves, double precio_dolar) {
-    return (precio_dolar > 0.0) ? precio_ves / precio_dolar : 0.0;
-}
-
 void printSeparator() {
     std::cout << std::string(50, '-') << std::endl;
 }
