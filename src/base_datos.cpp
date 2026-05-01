@@ -267,6 +267,64 @@ void BaseDatos::actualizarSchema() {
             fecha TEXT
         ))",
 
+        // Contenedores/Refrigeradores
+        R"(CREATE TABLE IF NOT EXISTS contenedores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            ubicacion TEXT,
+            capacidad_maxima INTEGER DEFAULT 0,
+            cantidad_actual INTEGER DEFAULT 0,
+            temperatura REAL DEFAULT 4.0,
+            estado TEXT DEFAULT 'disponible',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        ))",
+
+        // Productos procesados
+        R"(CREATE TABLE IF NOT EXISTS productos_procesados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contenedor_id INTEGER REFERENCES contenedores(id),
+            lote_id INTEGER REFERENCES lotes(id),
+            cantidad INTEGER DEFAULT 0,
+            peso_total REAL DEFAULT 0,
+            peso_promedio REAL DEFAULT 0,
+            fecha_procesamiento TEXT,
+            fecha_vencimiento TEXT,
+            disponible INTEGER DEFAULT 1
+        ))",
+
+        // Facturas
+        R"(CREATE TABLE IF NOT EXISTS facturas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            venta_id INTEGER REFERENCES ventas(id),
+            numero_factura TEXT NOT NULL UNIQUE,
+            fecha TEXT NOT NULL,
+            cliente_nombre TEXT,
+            cliente_cedula TEXT,
+            cliente_telefono TEXT,
+            cliente_direccion TEXT,
+            cantidad_pollos INTEGER DEFAULT 0,
+            peso_total REAL DEFAULT 0,
+            precio_unitario REAL DEFAULT 0,
+            subtotal REAL DEFAULT 0,
+            iva REAL DEFAULT 0,
+            total REAL DEFAULT 0,
+            observaciones TEXT,
+            anulada INTEGER DEFAULT 0
+        ))",
+
+        // Beneficio (registro de matanza)
+        R"(CREATE TABLE IF NOT EXISTS beneficio (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            lote_id INTEGER REFERENCES lotes(id),
+            cantidad INTEGER DEFAULT 0,
+            peso_total REAL DEFAULT 0,
+            fecha TEXT NOT NULL,
+            tipo_beneficio TEXT DEFAULT 'manual',
+            operador_nombre TEXT,
+            operador_cedula TEXT,
+            observaciones TEXT
+        ))",
+
         // Agregar corral_id a lotes
         "ALTER TABLE lotes ADD COLUMN corral_id INTEGER REFERENCES corrales(id)"
     };

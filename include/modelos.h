@@ -469,6 +469,77 @@ struct MetricasGranja {
     double ingreso_total = 0.0;
 };
 
+enum class TipoBeneficio {
+    Manual,
+    Automatico,
+    Mixto
+};
+
+enum class EstadoContenedor {
+    Disponible,
+    Ocupado,
+    Mantenimiento,
+    Desactivado
+};
+
+// Contenedor/Refrigerador para pollos procesados
+struct Contenedor {
+    int id = 0;
+    std::string nombre;
+    std::string ubicacion;
+    int capacidad_maxima = 0;
+    int cantidad_actual = 0;
+    double temperatura = 0.0;
+    EstadoContenedor estado = EstadoContenedor::Disponible;
+    std::string created_at;
+};
+
+// Producto procesado (pollo sacrificado almacenado)
+struct ProductoProcesado {
+    int id = 0;
+    int contenedor_id = 0;
+    int lote_id = 0;
+    int cantidad = 0;
+    double peso_total = 0.0;
+    double peso_promedio = 0.0;
+    std::string fecha_procesamiento;
+    std::string fecha_vencimiento;
+    bool disponible = true;
+};
+
+// Factura de venta
+struct Factura {
+    int id = 0;
+    int venta_id = 0;
+    std::string numero_factura;
+    std::string fecha;
+    std::string cliente_nombre;
+    std::string cliente_cedula;
+    std::string cliente_telefono;
+    std::string cliente_direccion;
+    int cantidad_pollos = 0;
+    double peso_total = 0.0;
+    double precio_unitario = 0.0;
+    double subtotal = 0.0;
+    double iva = 0.0;
+    double total = 0.0;
+    std::string observaciones;
+    bool anulada = false;
+};
+
+// Registro de beneficio (matanza)
+struct RegistroBeneficio {
+    int id = 0;
+    int lote_id = 0;
+    int cantidad = 0;
+    double peso_total = 0.0;
+    std::string fecha;
+    TipoBeneficio tipo_beneficio = TipoBeneficio::Manual;
+    std::string operador_nombre;
+    std::string operador_cedula;
+    std::string observaciones;
+};
+
 // ==================== FUNCIONES DE CONVERSIÓN ====================
 
 std::string faseToString(Fase f);
@@ -496,5 +567,11 @@ EstadoEquipo stringToEstadoEquipo(const std::string& s);
 
 // Calcular peso objetivo por semana
 double pesoObjetivoSemana(int semana);
+
+// Funciones de conversión para nuevos enums
+std::string tipoBeneficioToString(TipoBeneficio t);
+TipoBeneficio stringToTipoBeneficio(const std::string& s);
+std::string estadoContenedorToString(EstadoContenedor e);
+EstadoContenedor stringToEstadoContenedor(const std::string& s);
 
 #endif // MODELOS_H

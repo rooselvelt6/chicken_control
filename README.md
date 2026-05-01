@@ -49,6 +49,9 @@
 - **Optimización de base de datos** con VACUUM
 - **Validación de datos** en todos los formularios
 - **Paginación** en tablas grandes
+- **Sistema de Facturación** - Generación de facturas con IVA
+- **Contenedores/Refrigeradores** - Almacenamiento de pollos procesados
+- **Registro de Beneficio** - Control de matanza (manual/automático)
 
 ---
 
@@ -97,6 +100,13 @@ chmod +x instalar.sh
 | `./granja importar <archivo>` | Importar datos desde JSON |
 | `./granja optimizar` | Optimizar base de datos (VACUUM) |
 | `./granja alertas` | Ver alertas del sistema |
+| `./granja factura generar <venta> [cedula] [dir]` | Generar factura |
+| `./granja factura ver <id>` | Ver factura |
+| `./granja factura listar` | Listar facturas |
+| `./granja factura anular <id>` | Anular factura |
+| `./granja contenedor crear <nom> <ub> <cap> [temp]` | Crear contenedor |
+| `./granja contenedor listar` | Listar contenedores |
+| `./granja beneficio registrar <lote> <cant> <peso> <tipo> <op> <ced>` | Registrar beneficio |
 | **Lotes** | |
 | `./granja lote nuevo <num>` | Crear nuevo lote |
 | `./granja lote listar` | Listar todos los lotes |

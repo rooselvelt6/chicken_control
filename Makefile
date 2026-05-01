@@ -9,7 +9,8 @@ SRC = src/main.cpp src/modelos.cpp src/utils.cpp src/base_datos.cpp \
       src/inversores.cpp src/herramientas.cpp src/reportes.cpp \
       src/granjas.cpp src/corrales.cpp src/proveedores.cpp \
       src/veterinaria.cpp src/pesaje.cpp src/metricas.cpp \
-      src/ui.cpp src/alertas.cpp
+      src/ui.cpp src/alertas.cpp src/facturacion.cpp \
+      src/contenedores.cpp src/beneficio.cpp
 
 OBJ = $(SRC:.cpp=.o)
 TARGET = build/granja

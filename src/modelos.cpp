@@ -247,3 +247,43 @@ double pesoObjetivoSemana(int semana) {
         default: return 2.20;
     }
 }
+
+// Funciones de TipoBeneficio
+std::string tipoBeneficioToString(TipoBeneficio t) {
+    switch (t) {
+        case TipoBeneficio::Manual: return "manual";
+        case TipoBeneficio::Automatico: return "automatico";
+        case TipoBeneficio::Mixto: return "mixto";
+        default: return "desconocido";
+    }
+}
+
+TipoBeneficio stringToTipoBeneficio(const std::string& s) {
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "manual") return TipoBeneficio::Manual;
+    if (lower == "automatico" || lower == "automatic") return TipoBeneficio::Automatico;
+    if (lower == "mixto") return TipoBeneficio::Mixto;
+    return TipoBeneficio::Manual;
+}
+
+// Funciones de EstadoContenedor
+std::string estadoContenedorToString(EstadoContenedor e) {
+    switch (e) {
+        case EstadoContenedor::Disponible: return "disponible";
+        case EstadoContenedor::Ocupado: return "ocupado";
+        case EstadoContenedor::Mantenimiento: return "mantenimiento";
+        case EstadoContenedor::Desactivado: return "desactivado";
+        default: return "desconocido";
+    }
+}
+
+EstadoContenedor stringToEstadoContenedor(const std::string& s) {
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower == "disponible") return EstadoContenedor::Disponible;
+    if (lower == "ocupado") return EstadoContenedor::Ocupado;
+    if (lower == "mantenimiento") return EstadoContenedor::Mantenimiento;
+    if (lower == "desactivado") return EstadoContenedor::Desactivado;
+    return EstadoContenedor::Disponible;
+}

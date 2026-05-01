@@ -23,6 +23,9 @@
 #include "../include/metricas.h"
 #include "../include/ui.h"
 #include "../include/alertas.h"
+#include "../include/facturacion.h"
+#include "../include/contenedores.h"
+#include "../include/beneficio.h"
 
 void mostrarAyuda() {
     std::cout << R"(
@@ -39,6 +42,16 @@ Comandos principales:
   importar <archivo> - Importar datos desde archivo JSON
   optimizar         - Optimizar base de datos (VACUUM)
   alertas           - Ver alertas del sistema
+  factura generar <venta> - Generar factura de venta
+  factura ver <id>       - Ver factura
+  factura listar          - Listar facturas
+  factura anular <id>    - Anular factura
+  contenedor crear <nombre> <ubicacion> <capacidad> [temp]
+  contenedor listar       - Listar contenedores
+  contenedor productos    - Ver productos en contenedores
+  beneficio registrar <lote> <cant> <peso> <tipo> <operador> <cedula>
+  beneficio listar        - Listar registros de beneficio
+  beneficio stats         - Ver estadisticas
 
   config            - Configurar parámetros
     set-dolar <valor>   Establecer precio del dólar
@@ -574,6 +587,83 @@ int main(int argc, char* argv[]) {
     }
     else if (cmd == "alertas") {
         Alertas::mostrarAlertas();
+    }
+    else if (cmd == "factura") {
+        if (argc < 3) {
+            std::cout << "Uso: factura generar <venta_id> | ver <id> | listar | anular <id>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "generar" && argc > 3) {
+            int venta_id = std::stoi(argv[3]);
+            std::string cedula = (argc > 4) ? argv[4] : "";
+            std::string direccion = (argc > 5) ? argv[5] : "";
+            int id = Facturacion::generarFactura(venta_id, cedula, direccion);
+            std::cout << "Factura #" << id << " generada" << std::endl;
+        }
+        else if (sub == "ver" && argc > 3) {
+            Facturacion::mostrarFactura(std::stoi(argv[3]));
+        }
+        else if (sub == "listar") {
+            for (auto& f : Facturacion::listarFacturas()) {
+                std::cout << f.numero_factura << " | " << f.cliente_nombre << " | Bs. " << std::fixed << std::setprecision(2) << f.total << " | " << (f.anulada ? "ANULADA" : "ACTIVA") << std::endl;
+            }
+        }
+        else if (sub == "anular" && argc > 3) {
+            Facturacion::anularFactura(std::stoi(argv[3]));
+            std::cout << "Factura anulada" << std::endl;
+        }
+    }
+    else if (cmd == "contenedor") {
+        if (argc < 3) {
+            std::cout << "Uso: contenedor crear <nombre> <ubicacion> <capacidad> [temp] | listar | productos" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "crear" && argc > 5) {
+            std::string nombre = argv[3];
+            std::string ubicacion = argv[4];
+            int capacidad = std::stoi(argv[5]);
+            double temp = (argc > 6) ? std::stod(argv[6]) : 4.0;
+            int id = Contenedores::crear(nombre, ubicacion, capacidad, temp);
+            std::cout << "Contenedor '" << nombre << "' creado (ID: " << id << ")" << std::endl;
+        }
+        else if (sub == "listar") {
+            for (auto& c : Contenedores::listar()) {
+                std::cout << c.id << ": " << c.nombre << " | " << c.ubicacion << " | Cap: " << c.cantidad_actual << "/" << c.capacidad_maxima << " | " << estadoContenedorToString(c.estado) << " | " << c.temperatura << "°C" << std::endl;
+            }
+        }
+        else if (sub == "productos") {
+            for (auto& p : Contenedores::listarProductos()) {
+                std::cout << "ID: " << p.id << " | Contenedor: " << p.contenedor_id << " | Lote: " << p.lote_id << " | Cant: " << p.cantidad << " | Peso: " << std::fixed << std::setprecision(2) << p.peso_total << " kg" << std::endl;
+            }
+        }
+    }
+    else if (cmd == "beneficio") {
+        if (argc < 3) {
+            std::cout << "Uso: beneficio registrar <lote> <cant> <peso> <tipo> <operador> <cedula> | listar | stats" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "registrar" && argc > 8) {
+            int lote = std::stoi(argv[3]);
+            int cantidad = std::stoi(argv[4]);
+            double peso = std::stod(argv[5]);
+            std::string tipo = argv[6];
+            std::string operador = argv[7];
+            std::string cedula = argv[8];
+            TipoBeneficio tb = stringToTipoBeneficio(tipo);
+            int id = Beneficio::registrar(lote, cantidad, peso, tb, operador, cedula);
+            std::cout << "Beneficio registrado (ID: " << id << ")" << std::endl;
+        }
+        else if (sub == "listar") {
+            for (auto& b : Beneficio::listar()) {
+                std::cout << "Lote: " << b.lote_id << " | Cant: " << b.cantidad << " | Peso: " << std::fixed << std::setprecision(2) << b.peso_total << " kg | Tipo: " << tipoBeneficioToString(b.tipo_beneficio) << " | Operador: " << b.operador_nombre << std::endl;
+            }
+        }
+        else if (sub == "stats") {
+            Beneficio::mostrarEstadisticas();
+        }
     }
     else {
         std::cout << "Comando desconocido: " << cmd << std::endl;
