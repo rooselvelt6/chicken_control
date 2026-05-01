@@ -10,7 +10,26 @@ int Herramientas::agregar(const std::string& nombre, int cantidad, double precio
     return db->insertarYGetId("INSERT INTO herramientas (nombre, cantidad, precio_unitario, tipo) VALUES ('" + nombre + "', " + std::to_string(cantidad) + ", " + std::to_string(precio_unitario) + ", " + tipo_sql + ")");
 }
 
-Herramienta* Herramientas::obtener(int id) { return nullptr; }
+Herramienta* Herramientas::obtener(int id) {
+    auto* db = BaseDatos::getInstancia();
+    static Herramienta h;
+    sqlite3_stmt* stmt;
+    std::string sql = "SELECT id, nombre, cantidad, precio_unitario, tipo FROM herramientas WHERE id = " + std::to_string(id);
+    if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            h.id = sqlite3_column_int(stmt, 0);
+            h.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            h.cantidad = sqlite3_column_int(stmt, 2);
+            h.precio_unitario = sqlite3_column_double(stmt, 3);
+            const char* t = (const char*)sqlite3_column_text(stmt, 4);
+            h.tipo = t ? t : "";
+            sqlite3_finalize(stmt);
+            return &h;
+        }
+    }
+    sqlite3_finalize(stmt);
+    return nullptr;
+}
 
 std::vector<Herramienta> Herramientas::listar() {
     auto* db = BaseDatos::getInstancia();
@@ -32,8 +51,15 @@ std::vector<Herramienta> Herramientas::listar() {
     return resultado;
 }
 
-void Herramientas::actualizar(int id, const std::string& nombre, int cantidad, double precio_unitario) {}
-void Herramientas::eliminar(int id) {}
+void Herramientas::actualizar(int id, const std::string& nombre, int cantidad, double precio_unitario) {
+    auto* db = BaseDatos::getInstancia();
+    db->ejecutarSQL("UPDATE herramientas SET nombre = '" + nombre + "', cantidad = " + std::to_string(cantidad) + ", precio_unitario = " + std::to_string(precio_unitario) + " WHERE id = " + std::to_string(id));
+}
+
+void Herramientas::eliminar(int id) {
+    auto* db = BaseDatos::getInstancia();
+    db->ejecutarSQL("DELETE FROM herramientas WHERE id = " + std::to_string(id));
+}
 
 double Herramientas::totalInvertido() {
     auto* db = BaseDatos::getInstancia();

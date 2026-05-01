@@ -26,6 +26,10 @@ public:
     Configuracion getConfiguracion();
     void inicializar();
     void actualizarSchema();
+    void crearIndices();
+    std::string exportarJSON();
+    bool importarJSON(const std::string& json);
+    void vacuum();
     
     // Transacciones para mejor rendimiento
     void iniciarTransaccion();

@@ -6,8 +6,9 @@
 [![SQLite](https://img.shields.io/badge/SQLite-3-brightgreen.svg?style=flat-square)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux-orange.svg?style=flat-square)](https://fedora.org/)
+[![ncurses](https://img.shields.io/badge/ncurses-TUI-blue.svg?style=flat-square)](https://invisible-island.net/ncurses/)
 
-**Sistema completo de gestión y control para granjas de pollos de engorde**
+**Sistema completo de gestión y control para granjas avícolas**
 
 </div>
 
@@ -15,62 +16,49 @@
 
 ## 📋 Descripción
 
-**Chicken Control** es un sistema de gestión integral para granjas avícolas, desarrollado en **C++** con base de datos **SQLite**. Permite controlar todo el ciclo de producción de pollos de engorde (45 días), desde la recepción de animales hasta la venta final, con seguimiento de peso semanal, mortalidad, alimentación y métricas financieras.
+**Chicken Control** es un sistema de gestión integral para granjas avícolas, desarrollado en **C++** con base de datos **SQLite**. Ofrece dos modos de uso:
+
+1. **CLI (Línea de comandos)** - Para usuarios avanzados
+2. **TUI (Interfaz visual)** - Menú interactivo con ncurses
 
 ---
 
 ## ✨ Características Principales
 
-### 🏠 Gestión de Granjas
-- Múltiples tipos de granja: **Terrestre**, **Aérea**, **Marítima**
-- Múltiples galpones/corrales por granja
-- Especificaciones detalladas de cada corral:
-  - Dimensiones (largo, ancho, altura)
-  - Tipo de techo y protección
-  - Sistema de ventilación y orientación
-  - Comederos y bebederos
-  - Iluminación y calefacción
+### 🖥️ Interfaz TUI (Nueva)
+- Menú interactivo con navegación por teclado
+- Colores y diseño mejorado
+- Paginación en tablas grandes
+- Validación de datos en formularios
 
-### 🐣 Gestión de Animales
-- Registro de lotes con control de fechas
-- Seguimiento individual por fase (Bebé → Intermedio → Grande)
-- Control de mortalidad por causa:
-  - Aplastamiento, Ahogamiento, Gases tóxicos, Infarto, Retención de líquidos
-- Sacrificio con registro de peso
+### 📊 Funcionalidades del Sistema
 
-### ⚖️ Pesaje Semanal
-- Registro de peso durante el ciclo de 45 días
-- Peso objetivo por semana
-- Comparación automática: ✓ En peso / ↑ Por encima / ↓ Por debajo
-- Reporte visual de evolución de peso
+| Módulo | Descripción |
+|--------|-------------|
+| **Lotes y Animales** | Crear lotes, agregar animales, registrar muertes y sacrificios |
+| **Alimentación** | Inventario de alimentos, consumo por lote, control de stock |
+| **Ventas y Clientes** | Registro de ventas, control de deudas, seguimiento de pagos |
+| **Granjas y Corrales** | Gestión de múltiples granjas y corrales con especificaciones técnicas |
+| **Veterinaria** | Catálogo de vacunas, inventario de medicamentos |
+| **Reportes y Métricas** | Dashboard general, métricas por lote, reportes financieros |
+| **Alertas** | Notificaciones automáticas de inventario bajo, mortalidad alta, deudas pendientes |
 
-### 🍞 Alimentación
-- Inventario de alimentos por fase
-- Control de consumo por lote
-- Cálculo de conversión alimenticia
-
-### 💰 Ventas y Finanzas
-- Registro de clientes y ventas
-- Control de métodos de pago
-- Seguimiento de deudas pendientes
-- Métricas por lote:
-  - Costo por kg producido
-  - Rentabilidad porcentual
-  - Ganancia neta
-
-### 🏥 Veterinaria
-- Catálogo de vacunas (aplicación por día)
-- Inventario de medicamentos
-- Control de proveedores
+### ⚙️ Características Técnicas
+- **Índices SQLite** para queries optimizadas (10-100x más rápidas)
+- **Exportar/Importar JSON** para backup y restauración
+- **Optimización de base de datos** con VACUUM
+- **Validación de datos** en todos los formularios
+- **Paginación** en tablas grandes
 
 ---
 
 ## 🚀 Instalación
 
 ### Requisitos
-- **Linux** (probado en Fedora)
+- **Linux** (probado en Fedora/Debian)
 - **GCC** con soporte C++17
-- **SQLite3**
+- **SQLite3** y desarrollo (`libsqlite3-dev`)
+- **ncurses** (`libncurses-dev`)
 - **Make**
 
 ### Compilación
@@ -92,89 +80,149 @@ chmod +x instalar.sh
 
 ## 📖 Uso
 
-### Ver ayuda
+### Modo CLI (Línea de comandos)
+
+#### Ver ayuda
 ```bash
 ./build/granja ayuda
 ```
 
-### Ejemplo rápido
-```bash
-# Cargar datos de ejemplo
-./build/granja ejemplo
-
-# Listar lotes
-./build/granja lote listar
-
-# Agregar animales
-./build/granja animal agregar 1 100 --precio 1.0
-
-# Registrar pesaje semanal
-./build/granja pesaje registrar 1 1 "0.5,0.6,0.55,0.58"
-
-# Ver métricas del lote
-./build/granja metricas lote 1
-```
-
-### Comandos disponibles
+#### Comandos principales
 
 | Comando | Descripción |
 |---------|-------------|
-| `ayuda` | Mostrar todos los comandos |
-| `ejemplo` | Cargar datos de demostración |
-| `granja crear <nombre> <tipo_id>` | Crear nueva granja |
-| `granja listar` | Listar todas las granjas |
-| `corral crear <granja> <num> <nombre> <capacidad>` | Crear corral |
-| `lote nuevo <num>` | Crear nuevo lote |
-| `animal agregar <lote> <cant>` | Agregar animales |
-| `animal muerte <lote> <causa> <cant>` | Registrar muerte |
-| `animal sacrificar <lote> <cant> <peso>` | Registrar sacrificio |
-| `alimento agregar <nombre>` | Agregar alimento |
-| `alimento consumir <lote> <nombre> <cant>` | Registrar consumo |
-| `venta nueva <lote> <cliente> <pesos>` | Nueva venta |
-| `proveedor agregar <nombre>` | Agregar proveedor |
-| `vacuna agregar <nombre> <dias>` | Agregar vacuna |
-| `medicamento agregar <nombre>` | Agregar medicamento |
-| `pesaje registrar <lote> <semana> <pesos>` | Registrar peso semanal |
-| `metricas lote <id>` | Ver métricas del lote |
-| `metricas dashboard` | Ver dashboard general |
-| `reporte lote <id>` | Reporte completo del lote |
-| `reporte financiero` | Reporte financiero |
+| **UI y Configuración** | |
+| `./granja ui` | Iniciar interfaz gráfica TUI |
+| `./granja exportar` | Exportar base de datos a JSON |
+| `./granja importar <archivo>` | Importar datos desde JSON |
+| `./granja optimizar` | Optimizar base de datos (VACUUM) |
+| `./granja alertas` | Ver alertas del sistema |
+| **Lotes** | |
+| `./granja lote nuevo <num>` | Crear nuevo lote |
+| `./granja lote listar` | Listar todos los lotes |
+| `./granja lote cerrar <id>` | Cerrar un lote |
+| **Animales** | |
+| `./granja animal agregar <lote> <cant> [--precio P] [--peso KG]` | Agregar animales |
+| `./granja animal muerte <lote> <causa> <cant>` | Registrar muerte |
+| `./granja animal sacrificar <lote> <cant> <peso>` | Registrar sacrificio |
+| **Alimentación** | |
+| `./granja alimento agregar <nombre> [--fase fase] [--precio P] [--inventario N]` | Agregar alimento |
+| `./granja alimento consumir <lote> <nombre> <cant>` | Registrar consumo |
+| `./granja alimento inventario` | Ver inventario |
+| **Ventas** | |
+| `./granja cliente agregar <nombre> [--telefono T] [--referencia R]` | Agregar cliente |
+| `./granja venta nueva <lote> <cliente> <pesos> [--precio P]` | Nueva venta |
+| `./granja venta pagar <id> <monto>` | Registrar pago |
+| `./granja venta deudas` | Ver deudas pendientes |
+| **Reportes** | |
+| `./granja metricas lote <id>` | Métricas de un lote |
+| `./granja metricas dashboard` | Dashboard general |
+| `./granja reporte lote <id>` | Reporte completo del lote |
+| `./granja reporte financiero` | Reporte financiero |
+
+#### Ejemplo rápido de uso
+```bash
+# Iniciar interfaz gráfica
+./build/granja ui
+
+# O usar CLI
+./build/granja lote nuevo 1
+./build/granja animal agregar 1 100 --precio 1.0
+./build/granja alimento agregar "Engorde" --fase grande --precio 40 --inventario 50
+./build/granja animal agregar 1 100 --precio 1.0
+./granja pesaje registrar 1 1 "0.5,0.6,0.55,0.58"
+./granja metricas lote 1
+```
+
+### Modo TUI (Interfaz Gráfica)
+
+Para iniciar la interfaz visual:
+```bash
+./build/granja ui
+```
+
+**Controles:**
+- **Flechas** (↑↓): Navegar por el menú
+- **Enter**: Seleccionar opción
+- **Esc**: Volver/Salir
 
 ---
 
-## 📊 Estructura del Proyecto
+## 🏗️ Arquitectura del Sistema
 
 ```
 chicken_control/
-├── include/           # Archivos de cabecera (.h)
-│   ├── modelos.h      # Estructuras de datos y enums
-│   ├── base_datos.h   # Gestión de SQLite
-│   ├── lotes.h        # Gestión de lotes
-│   ├── animales.h     # Gestión de animales
-│   ├── alimentacion.h # Gestión de alimentos
-│   ├── ventas.h       # Gestión de ventas
-│   ├── pesaje.h       # Control de peso semanal
-│   ├── metricas.h     # Cálculos y reportes
+├── include/                    # Archivos de cabecera (.h)
+│   ├── modelos.h              # Estructuras de datos y enums
+│   ├── base_datos.h          # Gestión de SQLite
+│   ├── ui.h                   # Interfaz TUI (ncurses)
+│   ├── alertas.h             # Sistema de alertas
+│   ├── lotes.h               # Gestión de lotes
+│   ├── animales.h            # Gestión de animales
+│   ├── alimentacion.h        # Gestión de alimentos
+│   ├── ventas.h              # Gestión de ventas
+│   ├── metricas.h            # Cálculos y reportes
 │   └── ...
-├── src/               # Implementación (.cpp)
-│   ├── main.cpp       # Punto de entrada
-│   ├── modelos.cpp    # Funciones de modelos
-│   ├── base_datos.cpp # Base de datos SQLite
+├── src/                       # Implementación (.cpp)
+│   ├── main.cpp              # Punto de entrada
+│   ├── ui.cpp                # Interfaz TUI
+│   ├── alertas.cpp           # Sistema de alertas
+│   ├── base_datos.cpp        # Base de datos SQLite
 │   └── ...
-├── build/             # Ejecutable compilado
-├── datos/             # Base de datos SQLite
-├── Makefile          # Configuración de compilación
-└── README.md         # Este archivo
+├── build/                     # Ejecutable compilado
+├── datos/                     # Base de datos SQLite
+├── Makefile                   # Configuración de compilación
+└── README.md                  # Este archivo
 ```
+
+### Diagrama de Flujo
+
+```
+┌─────────────┐     ┌─────────────┐
+│   CLI       │────▶│   TUI       │
+│  (main.cpp) │     │  (ncurses)  │
+└──────┬──────┘     └──────┬──────┘
+       │                  │
+       ▼                  ▼
+┌──────────────────────────────────┐
+│         Base de Datos            │
+│       (SQLite + índices)         │
+└──────────────────────────────────┘
+       │    │    │    │    │
+       ▼    ▼    ▼    ▼    ▼
+   Lotes  Animales  Ventas  Aliment  ...
+```
+
+### Base de Datos
+
+**Tablas principales:**
+- `lotes` - Registro de lotes de producción
+- `animales` - Animales por lote
+- `muertes` - Mortalidad por causa
+- `sacrificios` - Sacrificio de pollos
+- `alimentos` - Inventario de alimentos
+- `consumo_alimento` - Consumo por lote
+- `ventas` - Registro de ventas
+- `clientes` - Clientes
+- `granjas` - Granjas registradas
+- `corrales` - Corrales por granja
+- `vacunas` - Catálogo de vacunas
+- `medicamentos` - Inventario de medicamentos
+- `pesaje_semanal` - Pesaje por semana
+
+**Índices optimizados:** 20+ índices para mejorar el rendimiento de consultas.
 
 ---
 
 ## 🛠️ Tecnologías
 
-- **Lenguaje:** C++17
-- **Base de datos:** SQLite3
-- **Build system:** Make
-- **Librerías:** sqlite3, pthreads
+| Tecnología | Uso |
+|------------|-----|
+| **C++17** | Lenguaje de programación |
+| **SQLite3** | Base de datos embebida |
+| **ncurses** | Interfaz TUI |
+| **Make** | Build system |
+| **Git** | Control de versiones |
 
 ---
 
@@ -186,8 +234,8 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 
 ## 👤 Autor
 
-**Tu Nombre**
-- GitHub: [@tu-usuario](https://github.com/tu-usuario)
+**Chicken Control**
+- GitHub: [tu-usuario](https://github.com/tu-usuario)
 
 ---
 

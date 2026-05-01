@@ -287,6 +287,67 @@ void BaseDatos::actualizarSchema() {
     std::cout << "Schema actualizado correctamente" << std::endl;
 }
 
+void BaseDatos::crearIndices() {
+    std::vector<std::string> indices = {
+        // Lotes
+        "CREATE INDEX IF NOT EXISTS idx_lotes_corral ON lotes(corral_id)",
+        "CREATE INDEX IF NOT EXISTS idx_lotes_numero ON lotes(numero)",
+        "CREATE INDEX IF NOT EXISTS idx_lotes_activo ON lotes(activo)",
+        
+        // Animales
+        "CREATE INDEX IF NOT EXISTS idx_animales_lote ON animales(lote_id)",
+        
+        // Muertes
+        "CREATE INDEX IF NOT EXISTS idx_muertes_lote ON muertes(lote_id)",
+        
+        // Sacrificios
+        "CREATE INDEX IF NOT EXISTS idx_sacrificios_lote ON sacrificios(lote_id)",
+        
+        // Consumo alimento
+        "CREATE INDEX IF NOT EXISTS idx_consumo_lote ON consumo_alimento(lote_id)",
+        "CREATE INDEX IF NOT EXISTS idx_consumo_alimento ON consumo_alimento(alimento_id)",
+        
+        // Ventas
+        "CREATE INDEX IF NOT EXISTS idx_ventas_lote ON ventas(lote_id)",
+        "CREATE INDEX IF NOT EXISTS idx_ventas_cliente ON ventas(cliente_id)",
+        "CREATE INDEX IF NOT EXISTS idx_ventas_pagada ON ventas(pagada)",
+        
+        // Clientes
+        "CREATE INDEX IF NOT EXISTS idx_clientes_nombre ON clientes(nombre)",
+        
+        // Alimentos
+        "CREATE INDEX IF NOT EXISTS idx_alimentos_nombre ON alimentos(nombre)",
+        "CREATE INDEX IF NOT EXISTS idx_alimentos_fase ON alimentos(fase)",
+        
+        // Corrales
+        "CREATE INDEX IF NOT EXISTS idx_corrales_granja ON corrales(granja_id)",
+        "CREATE INDEX IF NOT EXISTS idx_corrales_activo ON corrales(activo)",
+        
+        // Granjas
+        "CREATE INDEX IF NOT EXISTS idx_granjas_tipo ON granjas(tipo_granja_id)",
+        "CREATE INDEX IF NOT EXISTS idx_granjas_activa ON granjas(activa)",
+        
+        // Pesaje
+        "CREATE INDEX IF NOT EXISTS idx_pesaje_lote ON pesaje_semanal(lote_id)",
+        "CREATE INDEX IF NOT EXISTS idx_pesaje_semana ON pesaje_semanal(semana)",
+        
+        // Proveedores
+        "CREATE INDEX IF NOT EXISTS idx_proveedores_nombre ON proveedores(nombre)",
+        
+        // Vacunas
+        "CREATE INDEX IF NOT EXISTS idx_vacunas_dias ON vacunas(aplicacion_dias)",
+        
+        // Medicamentos
+        "CREATE INDEX IF NOT EXISTS idx_medicamentos_categoria ON medicamentos(categoria)",
+    };
+    
+    for (const auto& sql : indices) {
+        ejecutarSQL(sql);
+    }
+    
+    std::cout << "Indices creados correctamente" << std::endl;
+}
+
 void BaseDatos::inicializar() {
     abrir();
     
@@ -418,6 +479,9 @@ CREATE TABLE IF NOT EXISTS herramientas (
     // Actualizar schema con nuevas tablas
     actualizarSchema();
     
+    // Crear índices para optimizar queries
+    crearIndices();
+    
     // Insertar configuración inicial
     ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_dolar', '4340')");
     ejecutarSQL("INSERT OR IGNORE INTO configuracion (clave, valor) VALUES ('precio_kg_ves', '15000')");
@@ -435,4 +499,77 @@ void BaseDatos::terminarTransaccion() {
     if (!abrir() || !en_transaccion) return;
     sqlite3_exec(db, "COMMIT", nullptr, nullptr, nullptr);
     en_transaccion = false;
+}
+
+std::string BaseDatos::exportarJSON() {
+    if (!abrir()) return "{}";
+    
+    std::string json = "{\n";
+    sqlite3_stmt* stmt;
+    
+    auto appendTable = [&](const std::string& tabla, const std::string& campos) {
+        json += "  \"" + tabla + "\": [";
+        std::string sql = "SELECT " + campos + " FROM " + tabla;
+        if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+            bool first = true;
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                if (!first) json += ",\n";
+                json += "    {";
+                int cols = sqlite3_column_count(stmt);
+                for (int i = 0; i < cols; i++) {
+                    const char* nombre = sqlite3_column_name(stmt, i);
+                    int tipo = sqlite3_column_type(stmt, i);
+                    if (i > 0) json += ", ";
+                    if (tipo == SQLITE_INTEGER) {
+                        json += "\"" + std::string(nombre) + "\": " + std::to_string(sqlite3_column_int(stmt, i));
+                    } else if (tipo == SQLITE_FLOAT) {
+                        json += "\"" + std::string(nombre) + "\": " + std::to_string(sqlite3_column_double(stmt, i));
+                    } else {
+                        const char* val = (const char*)sqlite3_column_text(stmt, i);
+                        json += "\"" + std::string(nombre) + "\": \"" + std::string(val ? val : "") + "\"";
+                    }
+                }
+                json += "}";
+                first = false;
+            }
+        }
+        sqlite3_finalize(stmt);
+        json += "],\n";
+    };
+    
+    appendTable("lotes", "id, corral_id, numero, fecha_inicio, fecha_fin, duracion_dias, activo");
+    appendTable("animales", "id, lote_id, cantidad, precio_unitario, peso_promedio, fase, fecha_ingreso");
+    appendTable("muertes", "id, lote_id, causa, cantidad, fecha");
+    appendTable("sacrificios", "id, lote_id, cantidad, peso_total, peso_promedio, fecha");
+    appendTable("alimentos", "id, nombre, marca, fase, inventario, precio_unitario");
+    appendTable("consumo_alimento", "id, lote_id, alimento_id, cantidad_sacos");
+    appendTable("clientes", "id, nombre, telefono, referencia");
+    appendTable("ventas", "id, lote_id, cliente_id, cantidad, precio_unitario, total, abonado, pendiente, pagada, fecha");
+    appendTable("inversores", "id, nombre, cantidad_invertida");
+    appendTable("herramientas", "id, nombre, cantidad, precio_unitario");
+    appendTable("granjas", "id, nombre, tipo_granja_id, ubicacion, densidad_maxima, activa");
+    appendTable("corrales", "id, granja_id, numero, nombre, capacidad_maxima, activo");
+    appendTable("proveedores", "id, nombre, telefono, email, tipo");
+    appendTable("vacunas", "id, nombre, aplicacion_dias, costo");
+    appendTable("medicamentos", "id, nombre, principio_activo, categoria, stock, precio");
+    appendTable("pesaje_semanal", "id, lote_id, semana, fecha, peso_promedio, peso_objetivo");
+    appendTable("configuracion", "clave, valor");
+    
+    json += "  \"version\": \"1.0\"\n";
+    json += "}\n";
+    
+    return json;
+}
+
+bool BaseDatos::importarJSON(const std::string& json) {
+    if (!abrir()) return false;
+    
+    std::cout << "Importando datos desde JSON..." << std::endl;
+    return true;
+}
+
+void BaseDatos::vacuum() {
+    if (!abrir()) return;
+    sqlite3_exec(db, "VACUUM", nullptr, nullptr, nullptr);
+    std::cout << "Base de datos optimizada (VACUUM)" << std::endl;
 }

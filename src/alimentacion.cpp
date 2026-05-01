@@ -21,7 +21,30 @@ int Alimentacion::agregar(const std::string& nombre, const std::string& marca, F
     return db->insertarYGetId(sql);
 }
 
-Alimento* Alimentacion::obtener(int id) { return nullptr; }
+Alimento* Alimentacion::obtener(int id) {
+    auto* db = BaseDatos::getInstancia();
+    std::string sql = "SELECT id, nombre, marca, fase, proteina, contenido_kg, precio_unitario, inventario FROM alimentos WHERE id = " + std::to_string(id);
+    sqlite3_stmt* stmt;
+    static Alimento a;
+    if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            a.id = sqlite3_column_int(stmt, 0);
+            a.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* m = (const char*)sqlite3_column_text(stmt, 2);
+            a.marca = m ? m : "";
+            const char* f = (const char*)sqlite3_column_text(stmt, 3);
+            a.fase = f ? stringToFase(f) : Fase::Desconocido;
+            a.analisis.proteina = sqlite3_column_double(stmt, 4);
+            a.contenido_kg = sqlite3_column_int(stmt, 5);
+            a.precio_unitario = sqlite3_column_double(stmt, 6);
+            a.inventario = sqlite3_column_int(stmt, 7);
+            sqlite3_finalize(stmt);
+            return &a;
+        }
+    }
+    sqlite3_finalize(stmt);
+    return nullptr;
+}
 
 Alimento* Alimentacion::obtenerPorNombre(const std::string& nombre) {
     auto* db = BaseDatos::getInstancia();
@@ -72,7 +95,30 @@ std::vector<Alimento> Alimentacion::listar() {
     return resultado;
 }
 
-std::vector<Alimento> Alimentacion::listarPorFase(Fase fase) { return listar(); }
+std::vector<Alimento> Alimentacion::listarPorFase(Fase fase) {
+    auto* db = BaseDatos::getInstancia();
+    std::vector<Alimento> resultado;
+    sqlite3_stmt* stmt;
+    std::string sql = "SELECT id, nombre, marca, fase, proteina, contenido_kg, precio_unitario, inventario FROM alimentos WHERE fase = '" + faseToString(fase) + "' ORDER BY nombre";
+    if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            Alimento a;
+            a.id = sqlite3_column_int(stmt, 0);
+            a.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* m = (const char*)sqlite3_column_text(stmt, 2);
+            a.marca = m ? m : "";
+            const char* f = (const char*)sqlite3_column_text(stmt, 3);
+            a.fase = f ? stringToFase(f) : Fase::Desconocido;
+            a.analisis.proteina = sqlite3_column_double(stmt, 4);
+            a.contenido_kg = sqlite3_column_int(stmt, 5);
+            a.precio_unitario = sqlite3_column_double(stmt, 6);
+            a.inventario = sqlite3_column_int(stmt, 7);
+            resultado.push_back(a);
+        }
+    }
+    sqlite3_finalize(stmt);
+    return resultado;
+}
 
 void Alimentacion::actualizarInventario(int alimento_id, int cantidad) {
     auto* db = BaseDatos::getInstancia();
@@ -89,7 +135,23 @@ int Alimentacion::registrarConsumo(int lote_id, int alimento_id, int cantidad_sa
 }
 
 std::vector<ConsumoAlimento> Alimentacion::listarConsumo(int lote_id) {
+    auto* db = BaseDatos::getInstancia();
     std::vector<ConsumoAlimento> resultado;
+    sqlite3_stmt* stmt;
+    std::string sql = "SELECT c.id, c.lote_id, c.alimento_id, a.nombre, c.cantidad_sacos FROM consumo_alimento c JOIN alimentos a ON c.alimento_id = a.id WHERE c.lote_id = " + std::to_string(lote_id);
+    if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            ConsumoAlimento c;
+            c.id = sqlite3_column_int(stmt, 0);
+            c.lote_id = sqlite3_column_int(stmt, 1);
+            c.alimento_id = sqlite3_column_int(stmt, 2);
+            const char* n = (const char*)sqlite3_column_text(stmt, 3);
+            c.nombre_alimento = n ? n : "";
+            c.cantidad_sacos = sqlite3_column_int(stmt, 4);
+            resultado.push_back(c);
+        }
+    }
+    sqlite3_finalize(stmt);
     return resultado;
 }
 

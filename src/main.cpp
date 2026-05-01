@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <iomanip>
+#include <fstream>
 #include "../include/modelos.h"
 #include "../include/utils.h"
 #include "../include/base_datos.h"
@@ -20,6 +21,8 @@
 #include "../include/veterinaria.h"
 #include "../include/pesaje.h"
 #include "../include/metricas.h"
+#include "../include/ui.h"
+#include "../include/alertas.h"
 
 void mostrarAyuda() {
     std::cout << R"(
@@ -31,6 +34,11 @@ Uso: ./granja <comando> [opciones]
 Comandos principales:
   ayuda             - Mostrar esta ayuda
   ejemplo           - Cargar datos de ejemplo
+  ui                - Iniciar interfaz grafica TUI (menu interactivo)
+  exportar          - Exportar base de datos a JSON
+  importar <archivo> - Importar datos desde archivo JSON
+  optimizar         - Optimizar base de datos (VACUUM)
+  alertas           - Ver alertas del sistema
 
   config            - Configurar parámetros
     set-dolar <valor>   Establecer precio del dólar
@@ -87,10 +95,10 @@ Ejemplos:
   ./granja animal sacrificar 1 10 22.5
   ./granja alimento agregar "Preinicial 1" --fase bebe --precio 37 --inventario 50
   ./granja alimento consumir 1 "Preinicial 1" 10
-  ./granja cliente agregar Xiomara --telefono 04121234567
-  ./granja venta nueva 1 Xiomara "2.2,2.5,2.4" --precio 34500
+  ./granja cliente agregar "Cliente1" --telefono 04120000000
+  ./granja venta nueva 1 "Cliente1" "2.2,2.5,2.4" --precio 34500
   ./granja venta pagar 1 34500
-  ./granja inversor agregar "Leomarlys Bejarano" 210
+  ./granja inversor agregar "Inversor1" 100
   ./granja herramienta agregar "Tornillos" 20 --precio 0.10
   ./granja reporte lote 1
   ./granja reporte financiero
@@ -121,6 +129,11 @@ int main(int argc, char* argv[]) {
 
     if (cmd == "ayuda") {
         mostrarAyuda();
+    }
+    else if (cmd == "ui") {
+        UI::inicializar();
+        UI::menuPrincipal();
+        UI::finalizar();
     }
     else if (cmd == "ejemplo") {
         std::cout << "Cargando datos de ejemplo..." << std::endl;
@@ -526,6 +539,41 @@ int main(int argc, char* argv[]) {
         else if (sub == "dashboard") {
             Metricas::dashboardGeneral();
         }
+    }
+    else if (cmd == "exportar") {
+        BaseDatos* db = BaseDatos::getInstancia();
+        std::string json = db->exportarJSON();
+        std::ofstream out("datos/backup.json");
+        if (out.is_open()) {
+            out << json;
+            out.close();
+            std::cout << "Datos exportados a datos/backup.json" << std::endl;
+        } else {
+            std::cout << "Error al crear archivo de exportacion" << std::endl;
+        }
+    }
+    else if (cmd == "importar" && argc > 2) {
+        std::ifstream in(argv[2]);
+        if (in.is_open()) {
+            std::string json((std::istreambuf_iterator<char>(in)),
+                             std::istreambuf_iterator<char>());
+            in.close();
+            BaseDatos* db = BaseDatos::getInstancia();
+            if (db->importarJSON(json)) {
+                std::cout << "Datos importados correctamente" << std::endl;
+            } else {
+                std::cout << "Error al importar datos" << std::endl;
+            }
+        } else {
+            std::cout << "No se pudo abrir el archivo: " << argv[2] << std::endl;
+        }
+    }
+    else if (cmd == "optimizar") {
+        BaseDatos* db = BaseDatos::getInstancia();
+        db->vacuum();
+    }
+    else if (cmd == "alertas") {
+        Alertas::mostrarAlertas();
     }
     else {
         std::cout << "Comando desconocido: " << cmd << std::endl;

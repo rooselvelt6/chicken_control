@@ -10,6 +10,7 @@ public:
     static Cliente* obtenerCliente(int id);
     static Cliente* obtenerClientePorNombre(const std::string& nombre);
     static std::vector<Cliente> listarClientes();
+    static std::vector<Venta> listar();
     static int registrarVenta(int lote_id, int cliente_id, const std::vector<double>& pesos,
                               double precio_unitario, const std::vector<std::string>& metodos_pago,
                               const std::string& fecha);
