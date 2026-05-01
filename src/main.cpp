@@ -26,6 +26,9 @@
 #include "../include/facturacion.h"
 #include "../include/contenedores.h"
 #include "../include/beneficio.h"
+#include "../include/financiero.h"
+#include "../include/graficos.h"
+#include "../include/reportes_txt.h"
 
 void mostrarAyuda() {
     std::cout << R"(
@@ -90,12 +93,24 @@ Comandos principales:
     agregar <nombre> <cant> [--precio P]
     listar              Mostrar herramientas
 
-  reporte            - Ver reportes
-    lote <id>         Reporte de un lote
-    financiero        Reporte financiero
-    inventario        Inventario completo
-    deudas            Deudas pendientes
-    completo          Reporte completo
+   reporte            - Ver reportes
+     lote <id>         Reporte de un lote
+     financiero        Reporte financiero
+     inventario        Inventario completo
+     deudas            Deudas pendientes
+     completo          Reporte completo
+     txt <tipo> <archivo>  Exportar a TXT (estado, flujo, costos, metricas, dashboard)
+
+   financiero         - Módulo financiero
+     estado <ini> <fin>    Estado de resultados
+     flujo <año>           Flujo de caja
+     costos-lote           Costos por lote
+
+   grafico            - Gráficos ASCII
+     ventas-mensuales <año>      Gráfico de ventas por mes
+     crecimiento <lote_id>       Gráfico de crecimiento
+     comparativo-lotes           Comparativa de lotes
+     histograma-pesos <lote_id>  Histograma de pesos
 
 Ejemplos:
   ./granja ayuda
@@ -117,6 +132,10 @@ Ejemplos:
   ./granja reporte financiero
   ./granja reporte inventario
   ./granja reporte completo
+  ./granja financiero estado 2024-01-01 2024-12-31
+  ./granja grafico ventas-mensuales 2024
+  ./granja grafico crecimiento 1
+  ./granja reporte txt dashboard reporte.txt
 )";
 }
 
@@ -409,16 +428,16 @@ int main(int argc, char* argv[]) {
     }
     else if (cmd == "reporte") {
         if (argc < 3) {
-            std::cout << "Uso: reporte lote | financiero | inventario | deudas | completo" << std::endl;
+            std::cout << "Uso: reporte lote <id> | financiero | inventario | deudas | completo | txt <tipo> <archivo>" << std::endl;
             return 0;
         }
         std::string sub = argv[2];
         if (sub == "lote" && argc > 3) {
-            int id = std::stoi(argv[3]);
-            Reportes::reporteLote(id);
+            int id = parsearIdSeguro(argv[3]);
+            if (id > 0) Metricas::imprimirMetricasLote(id);
         }
         else if (sub == "financiero") {
-            Reportes::reporteFinanciero();
+            Financiero::mostrarEstadoResultados("2020-01-01", "2025-12-31");
         }
         else if (sub == "inventario") {
             Reportes::reporteInventario();
@@ -428,6 +447,18 @@ int main(int argc, char* argv[]) {
         }
         else if (sub == "completo") {
             Reportes::reporteCompleto();
+        }
+        else if (sub == "txt" && argc > 4) {
+            std::string tipo = argv[3];
+            std::string archivo = argv[4];
+            if (tipo == "estado") ReportesTXT::exportarEstadoResultados(archivo, "2020-01-01", "2025-12-31");
+            else if (tipo == "flujo") ReportesTXT::exportarFlujoCaja(archivo, 2024);
+            else if (tipo == "costos") ReportesTXT::exportarCostosPorLote(archivo);
+            else if (tipo == "metricas" && argc > 5) {
+                int lote_id = parsearIdSeguro(argv[4]);
+                if (lote_id > 0) ReportesTXT::exportarMetricasLote(argv[5], lote_id);
+            }
+            else if (tipo == "dashboard") ReportesTXT::exportarDashboard(archivo);
         }
     }
     else if (cmd == "granja") {
@@ -594,6 +625,87 @@ int main(int argc, char* argv[]) {
     }
     else if (cmd == "alertas") {
         Alertas::mostrarAlertas();
+    }
+    else if (cmd == "financiero") {
+        if (argc < 3) {
+            std::cout << "Uso: financiero estado <fecha_inicio> <fecha_fin> | flujo <año> | costos-lote" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "estado" && argc > 4) {
+            Financiero::mostrarEstadoResultados(argv[3], argv[4]);
+        }
+        else if (sub == "flujo" && argc > 3) {
+            int anio = parsearIdSeguro(argv[3]);
+            if (anio > 0) Financiero::mostrarFlujoCaja(anio);
+        }
+        else if (sub == "costos-lote") {
+            Financiero::mostrarCostosPorLote();
+        }
+    }
+    else if (cmd == "grafico") {
+        if (argc < 3) {
+            std::cout << "Uso: grafico ventas-mensuales <año> | crecimiento <lote_id> | comparativo-lotes | histograma-pesos <lote_id>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "ventas-mensuales" && argc > 3) {
+            int año = parsearIdSeguro(argv[3]);
+            if (año > 0) Graficos::graficoVentasMensuales(año);
+        }
+        else if (sub == "crecimiento" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) Graficos::graficoCrecimientoLote(lote_id);
+        }
+        else if (sub == "comparativo-lotes") {
+            Graficos::graficoComparativoLotes();
+        }
+        else if (sub == "histograma-pesos" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) {
+                auto pesajes = Pesaje::listarPorLote(lote_id);
+                std::vector<double> pesos;
+                for (const auto& p : pesajes) pesos.push_back(p.peso_promedio);
+                Graficos::histogramaPesos(pesos);
+            }
+        }
+    }
+    else if (cmd == "reporte") {
+        std::cout << "DEBUG: Entering reporte section, argc=" << argc << std::endl;
+        if (argc < 3) {
+            std::cout << "Uso: reporte lote <id> | financiero | inventario | deudas | completo | txt <tipo> <archivo>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "lote" && argc > 3) {
+            int id = parsearIdSeguro(argv[3]);
+            if (id > 0) Metricas::imprimirMetricasLote(id);
+        }
+        else if (sub == "financiero") {
+            Financiero::mostrarEstadoResultados("2020-01-01", "2025-12-31");
+        }
+        else if (sub == "inventario") {
+            Reportes::reporteInventario();
+        }
+        else if (sub == "deudas") {
+            Reportes::reporteDeudas();
+        }
+        else if (sub == "completo") {
+            Reportes::reporteCompleto();
+        }
+        else if (sub == "txt" && argc > 4) {
+            std::string tipo = argv[3];
+            std::string archivo = argv[4];
+            std::cout << "DEBUG: tipo=" << tipo << " archivo=" << archivo << std::endl;
+            if (tipo == "estado") ReportesTXT::exportarEstadoResultados(archivo, "2020-01-01", "2025-12-31");
+            else if (tipo == "flujo") ReportesTXT::exportarFlujoCaja(archivo, 2024);
+            else if (tipo == "costos") ReportesTXT::exportarCostosPorLote(archivo);
+            else if (tipo == "metricas" && argc > 5) {
+                int lote_id = parsearIdSeguro(argv[4]);
+                if (lote_id > 0) ReportesTXT::exportarMetricasLote(argv[5], lote_id);
+            }
+             else if (tipo == "dashboard") ReportesTXT::exportarDashboard(archivo);
+        }
     }
     else if (cmd == "factura") {
         if (argc < 3) {

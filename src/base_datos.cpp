@@ -372,6 +372,18 @@ void BaseDatos::actualizarSchema() {
             descripcion TEXT
         ))",
 
+        // Movimientos financieros
+        R"(CREATE TABLE IF NOT EXISTS movimientos_financieros (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            fecha TEXT NOT NULL,
+            tipo TEXT NOT NULL,
+            categoria TEXT NOT NULL,
+            descripcion TEXT,
+            monto REAL DEFAULT 0,
+            es_ingreso INTEGER DEFAULT 0,
+            lote_id INTEGER REFERENCES lotes(id)
+        ))",
+
         // Agregar corral_id a lotes
         "ALTER TABLE lotes ADD COLUMN corral_id INTEGER REFERENCES corrales(id)"
     };
