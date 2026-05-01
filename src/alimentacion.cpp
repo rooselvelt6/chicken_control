@@ -9,9 +9,11 @@ int Alimentacion::agregar(const std::string& nombre, const std::string& marca, F
                           const AnalisisNutricional& analisis, int contenido_kg,
                           double precio_unitario, int inventario, int inicio_dias, int final_dias) {
     auto* db = BaseDatos::getInstancia();
-    std::string marca_sql = marca.empty() ? "NULL" : "'" + marca + "'";
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string marca_segura = sanitizarSQL(sanitizarInput(marca, 100));
+    std::string marca_sql = marca_segura.empty() ? "NULL" : "'" + marca_segura + "'";
     std::string sql = "INSERT INTO alimentos (nombre, marca, fase, proteina, humedad, grasa, ceniza, calcio, fibra, fosforo, contenido_kg, precio_unitario, inventario, inicio_dias, final_dias) VALUES ('" +
-                      nombre + "', " + marca_sql + ", '" + faseToString(fase) + "', " +
+                      nombre_seguro + "', " + marca_sql + ", '" + faseToString(fase) + "', " +
                       std::to_string(analisis.proteina) + ", " + std::to_string(analisis.humedad) + ", " +
                       std::to_string(analisis.grasa) + ", " + std::to_string(analisis.ceniza) + ", " +
                       std::to_string(analisis.calcio) + ", " + std::to_string(analisis.fibra) + ", " +
@@ -29,7 +31,8 @@ Alimento* Alimentacion::obtener(int id) {
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             a.id = sqlite3_column_int(stmt, 0);
-            a.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            a.nombre = n ? n : "";
             const char* m = (const char*)sqlite3_column_text(stmt, 2);
             a.marca = m ? m : "";
             const char* f = (const char*)sqlite3_column_text(stmt, 3);
@@ -48,13 +51,15 @@ Alimento* Alimentacion::obtener(int id) {
 
 Alimento* Alimentacion::obtenerPorNombre(const std::string& nombre) {
     auto* db = BaseDatos::getInstancia();
-    std::string sql = "SELECT id, nombre, marca, fase, proteina, contenido_kg, precio_unitario, inventario FROM alimentos WHERE nombre = '" + nombre + "'";
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string sql = "SELECT id, nombre, marca, fase, proteina, contenido_kg, precio_unitario, inventario FROM alimentos WHERE nombre = '" + nombre_seguro + "'";
     sqlite3_stmt* stmt;
     static Alimento a;
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             a.id = sqlite3_column_int(stmt, 0);
-            a.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            a.nombre = n ? n : "";
             const char* m = (const char*)sqlite3_column_text(stmt, 2);
             a.marca = m ? m : "";
             const char* f = (const char*)sqlite3_column_text(stmt, 3);

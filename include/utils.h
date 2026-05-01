@@ -24,6 +24,8 @@ bool isNotEmpty(const std::string& s);
 std::string capitalize(const std::string& s);
 
 std::string sanitizarSQL(const std::string& input);
+std::string sanitizarInput(const std::string& input, int maxLen);
+std::string sanitizarTelefono(const std::string& telefono);
 bool esNumeroValido(const std::string& s);
 int parsearIdSeguro(const std::string& s);
 

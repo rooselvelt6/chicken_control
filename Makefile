@@ -1,8 +1,9 @@
-.PHONY: all clean build run help install
+.PHONY: all clean build run help install test test-run
 
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
 LDFLAGS = -lsqlite3 -lpthread -ldl -lncurses
+TEST_LDFLAGS = -lsqlite3 -lpthread -ldl
 
 SRC = src/main.cpp src/modelos.cpp src/utils.cpp src/base_datos.cpp \
       src/lotes.cpp src/animales.cpp src/alimentacion.cpp src/ventas.cpp \
@@ -31,10 +32,20 @@ run: build
 	./$(TARGET)
 
 clean:
-	rm -rf build/*.o $(TARGET)
+	rm -rf build/*.o $(TARGET) build/test
 
 install: build
 	cp $(TARGET) /usr/local/bin/granja
+
+test: build/test
+	./build/test
+
+build/test: tests/test_main.cpp src/utils.o src/modelos.o
+	@mkdir -p build
+	$(CXX) $(CXXFLAGS) tests/test_main.cpp src/utils.o src/modelos.o -o build/test $(TEST_LDFLAGS)
+
+test-run: build/test
+	./build/test
 
 help:
 	@echo ""

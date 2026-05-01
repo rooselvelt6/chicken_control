@@ -8,7 +8,8 @@
 int Temperatura::registrar(int corral_id, double temperatura, double humedad, const std::string& observaciones) {
     auto* db = BaseDatos::getInstancia();
     std::string fecha = fechaActual();
-    std::string obs = observaciones.empty() ? "NULL" : "'" + observaciones + "'";
+    std::string obs_segura = sanitizarSQL(sanitizarInput(observaciones, 200));
+    std::string obs = obs_segura.empty() ? "NULL" : "'" + obs_segura + "'";
     std::string sql = "INSERT INTO temperatura_registros (corral_id, temperatura, humedad, fecha, observaciones) VALUES (" +
         std::to_string(corral_id) + ", " + std::to_string(temperatura) + ", " + std::to_string(humedad) + ", '" + fecha + "', " + obs + ")";
     return db->insertarYGetId(sql);
@@ -46,7 +47,8 @@ std::vector<RegistroTemperatura> Temperatura::listarPorFecha(const std::string& 
     auto* db = BaseDatos::getInstancia();
     std::vector<RegistroTemperatura> resultado;
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT id, corral_id, temperatura, humedad, fecha, observaciones FROM temperatura_registros WHERE fecha = '" + fecha + "'";
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha, 10));
+    std::string sql = "SELECT id, corral_id, temperatura, humedad, fecha, observaciones FROM temperatura_registros WHERE fecha = '" + fecha_segura + "'";
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             RegistroTemperatura r;
@@ -69,7 +71,9 @@ std::vector<RegistroTemperatura> Temperatura::listarRango(int corral_id, const s
     auto* db = BaseDatos::getInstancia();
     std::vector<RegistroTemperatura> resultado;
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT id, corral_id, temperatura, humedad, fecha, observaciones FROM temperatura_registros WHERE corral_id = " + std::to_string(corral_id) + " AND fecha BETWEEN '" + fecha_inicio + "' AND '" + fecha_fin + "' ORDER BY fecha";
+    std::string ini_segura = sanitizarSQL(sanitizarInput(fecha_inicio, 10));
+    std::string fin_segura = sanitizarSQL(sanitizarInput(fecha_fin, 10));
+    std::string sql = "SELECT id, corral_id, temperatura, humedad, fecha, observaciones FROM temperatura_registros WHERE corral_id = " + std::to_string(corral_id) + " AND fecha BETWEEN '" + ini_segura + "' AND '" + fin_segura + "' ORDER BY fecha";
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             RegistroTemperatura r;

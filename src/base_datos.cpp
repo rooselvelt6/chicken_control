@@ -1,4 +1,5 @@
 #include "../include/base_datos.h"
+#include "../include/utils.h"
 #include <iostream>
 #include <cstring>
 
@@ -66,7 +67,8 @@ int BaseDatos::insertarYGetId(const std::string& sql) {
 
 std::string BaseDatos::getConfigValue(const std::string& clave) {
     if (!abrir()) return "";
-    std::string sql = "SELECT valor FROM configuracion WHERE clave = '" + clave + "'";
+    std::string clave_segura = sanitizarSQL(clave);
+    std::string sql = "SELECT valor FROM configuracion WHERE clave = '" + clave_segura + "'";
     sqlite3_stmt* stmt;
     std::string resultado = "";
     if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -80,8 +82,10 @@ std::string BaseDatos::getConfigValue(const std::string& clave) {
 }
 
 void BaseDatos::setConfigValue(const std::string& clave, const std::string& valor) {
+    std::string clave_segura = sanitizarSQL(clave);
+    std::string valor_seguro = sanitizarSQL(valor);
     std::string sql = "INSERT OR REPLACE INTO configuracion (clave, valor, updated_at) VALUES ('" +
-                      clave + "', '" + valor + "', datetime('now'))";
+                      clave_segura + "', '" + valor_seguro + "', datetime('now'))";
     ejecutarSQL(sql);
 }
 

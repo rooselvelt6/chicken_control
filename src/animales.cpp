@@ -8,10 +8,11 @@
 int Animales::agregar(int lote_id, int cantidad, double precio_unitario, double peso_promedio, const std::string& fecha_ingreso) {
     auto* db = BaseDatos::getInstancia();
     Fase fase = clasificarFaseDias(0);
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha_ingreso, 10));
     std::string sql = "INSERT INTO animales (lote_id, cantidad, precio_unitario, peso_promedio, fase, fecha_ingreso) VALUES (" +
                       std::to_string(lote_id) + ", " + std::to_string(cantidad) + ", " +
                       std::to_string(precio_unitario) + ", " + std::to_string(peso_promedio) +
-                      ", '" + faseToString(fase) + "', '" + fecha_ingreso + "')";
+                      ", '" + faseToString(fase) + "', '" + fecha_segura + "')";
     return db->insertarYGetId(sql);
 }
 
@@ -77,9 +78,11 @@ int Animales::obtenerCantidadTotal(int lote_id) {
 
 int Animales::registrarMuerte(int lote_id, CausaMuerte causa, int cantidad, const std::string& fecha) {
     auto* db = BaseDatos::getInstancia();
+    std::string causa_segura = sanitizarSQL(causaMuerteToString(causa));
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha, 10));
     std::string sql = "INSERT INTO muertes (lote_id, causa, cantidad, fecha) VALUES (" +
-                      std::to_string(lote_id) + ", '" + causaMuerteToString(causa) + "', " +
-                      std::to_string(cantidad) + ", '" + fecha + "')";
+                      std::to_string(lote_id) + ", '" + causa_segura + "', " +
+                      std::to_string(cantidad) + ", '" + fecha_segura + "')";
     return db->insertarYGetId(sql);
 }
 
@@ -120,9 +123,10 @@ int Animales::totalMuertes(int lote_id) {
 int Animales::registrarSacrificio(int lote_id, int cantidad, double peso_total, const std::string& fecha) {
     auto* db = BaseDatos::getInstancia();
     double peso_promedio = (cantidad > 0) ? peso_total / cantidad : 0.0;
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha, 10));
     std::string sql = "INSERT INTO sacrificios (lote_id, cantidad, peso_total, peso_promedio, fecha) VALUES (" +
                       std::to_string(lote_id) + ", " + std::to_string(cantidad) + ", " +
-                      std::to_string(peso_total) + ", " + std::to_string(peso_promedio) + ", '" + fecha + "')";
+                      std::to_string(peso_total) + ", " + std::to_string(peso_promedio) + ", '" + fecha_segura + "')";
     return db->insertarYGetId(sql);
 }
 

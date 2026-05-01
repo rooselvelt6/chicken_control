@@ -7,9 +7,12 @@
 
 int Ventas::agregarCliente(const std::string& nombre, const std::string& telefono, const std::string& referencia) {
     auto* db = BaseDatos::getInstancia();
-    std::string tel = telefono.empty() ? "NULL" : "'" + telefono + "'";
-    std::string ref = referencia.empty() ? "NULL" : "'" + referencia + "'";
-    std::string sql = "INSERT INTO clientes (nombre, telefono, referencia) VALUES ('" + nombre + "', " + tel + ", " + ref + ")";
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string tel_seguro = sanitizarSQL(sanitizarTelefono(telefono));
+    std::string ref_seguro = sanitizarSQL(sanitizarInput(referencia, 100));
+    std::string tel = tel_seguro.empty() ? "NULL" : "'" + tel_seguro + "'";
+    std::string ref = ref_seguro.empty() ? "NULL" : "'" + ref_seguro + "'";
+    std::string sql = "INSERT INTO clientes (nombre, telefono, referencia) VALUES ('" + nombre_seguro + "', " + tel + ", " + ref + ")";
     return db->insertarYGetId(sql);
 }
 
@@ -17,13 +20,15 @@ Cliente* Ventas::obtenerCliente(int id) { return nullptr; }
 
 Cliente* Ventas::obtenerClientePorNombre(const std::string& nombre) {
     auto* db = BaseDatos::getInstancia();
-    std::string sql = "SELECT id, nombre, telefono, referencia FROM clientes WHERE nombre = '" + nombre + "'";
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string sql = "SELECT id, nombre, telefono, referencia FROM clientes WHERE nombre = '" + nombre_seguro + "'";
     sqlite3_stmt* stmt;
     static Cliente c;
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             c.id = sqlite3_column_int(stmt, 0);
-            c.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            c.nombre = n ? n : "";
             const char* t = (const char*)sqlite3_column_text(stmt, 2);
             c.telefono = t ? t : "";
             const char* r = (const char*)sqlite3_column_text(stmt, 3);
@@ -78,7 +83,8 @@ std::vector<Cliente> Ventas::listarClientes() {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             Cliente c;
             c.id = sqlite3_column_int(stmt, 0);
-            c.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            c.nombre = n ? n : "";
             const char* t = (const char*)sqlite3_column_text(stmt, 2);
             c.telefono = t ? t : "";
             const char* r = (const char*)sqlite3_column_text(stmt, 3);

@@ -124,11 +124,14 @@ std::string inputString(const std::string& etiqueta, int maxLen) {
     mvprintw(fila - 1, 2, "%s:", etiqueta.c_str());
     attroff(COLOR_PAIR(colorTitulo) | A_BOLD);
     echo();
-    char buffer[maxLen + 1];
-    memset(buffer, 0, maxLen + 1);
-    getstr(buffer);
+    int limite = (maxLen > 0 && maxLen < 500) ? maxLen : 200;
+    char* buffer = new char[limite + 1];
+    memset(buffer, 0, limite + 1);
+    mvgetnstr(fila, 2, buffer, limite);
+    std::string resultado = buffer;
+    delete[] buffer;
     noecho();
-    return std::string(buffer);
+    return sanitizarInput(resultado, maxLen);
 }
 
 int inputInt(const std::string& etiqueta, int min, int max) {

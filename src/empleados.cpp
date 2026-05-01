@@ -44,9 +44,12 @@ Turno Empleados::stringToTurno(const std::string& s) {
 
 int Empleados::agregar(const std::string& nombre, const std::string& cedula, const std::string& telefono, Cargo cargo, double salario, Turno turno) {
     auto* db = BaseDatos::getInstancia();
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string cedula_segura = sanitizarSQL(sanitizarInput(cedula, 20));
+    std::string telefono_seguro = sanitizarSQL(sanitizarTelefono(telefono));
     std::string fecha = fechaActual();
     std::string sql = "INSERT INTO empleados (nombre, cedula, telefono, cargo, salario, turno, activo, fecha_ingreso) VALUES ('" +
-        nombre + "', '" + cedula + "', '" + telefono + "', '" + cargoToString(cargo) + "', " +
+        nombre_seguro + "', '" + cedula_segura + "', '" + telefono_seguro + "', '" + cargoToString(cargo) + "', " +
         std::to_string(salario) + ", '" + turnoToString(turno) + "', 1, '" + fecha + "')";
     return db->insertarYGetId(sql);
 }

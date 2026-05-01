@@ -6,8 +6,9 @@
 
 int Lotes::crear(int numero, const std::string& fecha_inicio, int duracion) {
     auto* db = BaseDatos::getInstancia();
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha_inicio, 10));
     std::string sql = "INSERT INTO lotes (numero, fecha_inicio, duracion_dias, activo) VALUES (" +
-                      std::to_string(numero) + ", '" + fecha_inicio + "', " +
+                      std::to_string(numero) + ", '" + fecha_segura + "', " +
                       std::to_string(duracion) + ", 1)";
     return db->insertarYGetId(sql);
 }
@@ -62,14 +63,16 @@ std::vector<Lote> Lotes::listar(bool activos) {
 
 void Lotes::cerrar(int id, const std::string& fecha_fin) {
     auto* db = BaseDatos::getInstancia();
-    std::string sql = "UPDATE lotes SET activo = 0, fecha_fin = '" + fecha_fin + "' WHERE id = " + std::to_string(id);
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha_fin, 10));
+    std::string sql = "UPDATE lotes SET activo = 0, fecha_fin = '" + fecha_segura + "' WHERE id = " + std::to_string(id);
     db->ejecutarSQL(sql);
 }
 
 void Lotes::actualizar(int id, int numero, const std::string& fecha_inicio, int duracion) {
     auto* db = BaseDatos::getInstancia();
+    std::string fecha_segura = sanitizarSQL(sanitizarInput(fecha_inicio, 10));
     std::string sql = "UPDATE lotes SET numero = " + std::to_string(numero) +
-                      ", fecha_inicio = '" + fecha_inicio +
+                      ", fecha_inicio = '" + fecha_segura +
                       "', duracion_dias = " + std::to_string(duracion) +
                       " WHERE id = " + std::to_string(id);
     db->ejecutarSQL(sql);

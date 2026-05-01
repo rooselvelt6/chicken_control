@@ -125,12 +125,79 @@ std::string capitalize(const std::string& s) {
 }
 
 std::string sanitizarSQL(const std::string& input) {
+    if (input.empty()) return "";
+
     std::string result;
+    result.reserve(input.size() * 2);
+
     for (char c : input) {
-        if (c == '\'' || c == ';' || c == '-' || c == '=' || c == '(' || c == ')') {
-            continue;
+        if (c == '\0') continue;
+        if (c == '\'') {
+            result += "''";
+        } else if (c == ';') {
+            result += "";
+        } else if (c == '-' && result.length() >= 2 && result.substr(result.length()-2) == "--") {
+            result += " ";
+        } else {
+            result += c;
         }
-        result += c;
+    }
+
+    std::string lower = result;
+    std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+    if (lower.find("union") != std::string::npos ||
+        lower.find("select") != std::string::npos ||
+        lower.find("delete") != std::string::npos ||
+        lower.find("update") != std::string::npos ||
+        lower.find("insert") != std::string::npos ||
+        lower.find("drop") != std::string::npos ||
+        lower.find("create") != std::string::npos ||
+        lower.find("alter") != std::string::npos ||
+        lower.find("execute") != std::string::npos ||
+        lower.find("--") != std::string::npos ||
+        lower.find("/*") != std::string::npos ||
+        lower.find("*/") != std::string::npos ||
+        lower.find("xp_") != std::string::npos) {
+        result = "valor_invalido";
+    }
+
+    if (result.length() > 500) {
+        result = result.substr(0, 500);
+    }
+
+    return result;
+}
+
+std::string sanitizarInput(const std::string& input, int maxLen) {
+    if (input.empty()) return "";
+
+    std::string result;
+    result.reserve(input.size());
+
+    for (char c : input) {
+        if (c >= 32 && c < 127) {
+            result += c;
+        } else if (c == '\t' || c == '\n' || c == '\r') {
+            result += ' ';
+        }
+    }
+
+    if (result.length() > maxLen && maxLen > 0) {
+        result = result.substr(0, maxLen);
+    }
+
+    return result;
+}
+
+std::string sanitizarTelefono(const std::string& telefono) {
+    std::string result;
+    for (char c : telefono) {
+        if (std::isdigit(c) || c == '+' || c == '-' || c == ' ' || c == '(' || c == ')') {
+            result += c;
+        }
+    }
+    if (result.length() > 20) {
+        result = result.substr(0, 20);
     }
     return result;
 }

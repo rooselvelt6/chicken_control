@@ -5,7 +5,8 @@
 
 int Inversores::agregar(const std::string& nombre, double cantidad_invertida) {
     auto* db = BaseDatos::getInstancia();
-    return db->insertarYGetId("INSERT INTO inversores (nombre, cantidad_invertida) VALUES ('" + nombre + "', " + std::to_string(cantidad_invertida) + ")");
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    return db->insertarYGetId("INSERT INTO inversores (nombre, cantidad_invertida) VALUES ('" + nombre_seguro + "', " + std::to_string(cantidad_invertida) + ")");
 }
 
 Inversor* Inversores::obtener(int id) {
@@ -16,7 +17,8 @@ Inversor* Inversores::obtener(int id) {
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             i.id = sqlite3_column_int(stmt, 0);
-            i.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            i.nombre = n ? n : "";
             i.cantidad_invertida = sqlite3_column_double(stmt, 2);
             sqlite3_finalize(stmt);
             return &i;
@@ -30,11 +32,13 @@ Inversor* Inversores::obtenerPorNombre(const std::string& nombre) {
     auto* db = BaseDatos::getInstancia();
     static Inversor i;
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT id, nombre, cantidad_invertida FROM inversores WHERE nombre = '" + nombre + "'";
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    std::string sql = "SELECT id, nombre, cantidad_invertida FROM inversores WHERE nombre = '" + nombre_seguro + "'";
     if (sqlite3_prepare_v2(db->abrir(), sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             i.id = sqlite3_column_int(stmt, 0);
-            i.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            i.nombre = n ? n : "";
             i.cantidad_invertida = sqlite3_column_double(stmt, 2);
             sqlite3_finalize(stmt);
             return &i;
@@ -52,7 +56,8 @@ std::vector<Inversor> Inversores::listar() {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             Inversor i;
             i.id = sqlite3_column_int(stmt, 0);
-            i.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            i.nombre = n ? n : "";
             i.cantidad_invertida = sqlite3_column_double(stmt, 2);
             resultado.push_back(i);
         }
@@ -63,7 +68,8 @@ std::vector<Inversor> Inversores::listar() {
 
 void Inversores::actualizar(int id, const std::string& nombre, double cantidad_invertida) {
     auto* db = BaseDatos::getInstancia();
-    db->ejecutarSQL("UPDATE inversores SET nombre = '" + nombre + "', cantidad_invertida = " + std::to_string(cantidad_invertida) + " WHERE id = " + std::to_string(id));
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    db->ejecutarSQL("UPDATE inversores SET nombre = '" + nombre_seguro + "', cantidad_invertida = " + std::to_string(cantidad_invertida) + " WHERE id = " + std::to_string(id));
 }
 
 void Inversores::eliminar(int id) {
@@ -97,7 +103,8 @@ std::vector<std::pair<std::string, double>> Inversores::gananciasPorInversor(dou
 
 int Inversores::agregarEncargado(const std::string& nombre) {
     auto* db = BaseDatos::getInstancia();
-    return db->insertarYGetId("INSERT INTO encargado (nombre) VALUES ('" + nombre + "')");
+    std::string nombre_seguro = sanitizarSQL(sanitizarInput(nombre, 100));
+    return db->insertarYGetId("INSERT INTO encargado (nombre) VALUES ('" + nombre_seguro + "')");
 }
 
 std::vector<Encargado> Inversores::listarEncargados() {
@@ -108,7 +115,8 @@ std::vector<Encargado> Inversores::listarEncargados() {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             Encargado e;
             e.id = sqlite3_column_int(stmt, 0);
-            e.nombre = (const char*)sqlite3_column_text(stmt, 1);
+            const char* n = (const char*)sqlite3_column_text(stmt, 1);
+            e.nombre = n ? n : "";
             resultado.push_back(e);
         }
     }

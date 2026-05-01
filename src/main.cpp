@@ -172,9 +172,15 @@ int main(int argc, char* argv[]) {
         }
         std::string sub = argv[2];
         if (sub == "set-precio" && argc > 3) {
-            double valor = std::stod(argv[3]);
-            db->setConfigValue("precio_kg", std::to_string(valor));
-            std::cout << "Precio por kg establecido: USD " << std::fixed << std::setprecision(2) << valor << std::endl;
+            try {
+                double valor = std::stod(argv[3]);
+                if (valor <= 0) { std::cout << "Error: El precio debe ser mayor a 0" << std::endl; return 1; }
+                db->setConfigValue("precio_kg", std::to_string(valor));
+                std::cout << "Precio por kg establecido: USD " << std::fixed << std::setprecision(2) << valor << std::endl;
+            } catch (...) {
+                std::cout << "Error: Valor inválido. Use un número válido." << std::endl;
+                return 1;
+            }
         }
         else if (sub == "get-precio") {
             Configuracion c = db->getConfiguracion();
@@ -188,13 +194,14 @@ int main(int argc, char* argv[]) {
         }
         std::string sub = argv[2];
         if (sub == "nuevo" && argc > 3) {
-            int numero = std::stoi(argv[3]);
+            int numero = parsearIdSeguro(argv[3]);
+            if (numero <= 0) { std::cout << "Error: Número de lote inválido" << std::endl; return 1; }
             std::string fecha = fechaActual();
             int duracion = 45;
             for (int i = 4; i < argc; i++) {
                 std::string a = argv[i];
                 if (a == "--fecha" && i+1 < argc) fecha = argv[++i];
-                if (a == "--duracion" && i+1 < argc) duracion = std::stoi(argv[++i]);
+                if (a == "--duracion" && i+1 < argc) duracion = parsearIdSeguro(argv[++i]);
             }
             int id = Lotes::crear(numero, fecha, duracion);
             std::cout << "Lote #" << numero << " creado exitosamente (ID: " << id << ")" << std::endl;
