@@ -20,6 +20,7 @@
 #include <sstream>
 #include <iomanip>
 #include <fstream>
+#include <cstring>
 
 namespace UI {
 
@@ -40,10 +41,17 @@ void inicializar() {
     init_pair(9, COLOR_WHITE, COLOR_BLUE);
     init_pair(10, COLOR_BLACK, COLOR_GREEN);
     init_pair(11, COLOR_WHITE, COLOR_RED);
-    colorTitulo = 1;
-    colorSeleccion = 2;
-    colorNormal = 3;
-    colorBorde = 4;
+    init_pair(12, COLOR_BLACK, COLOR_CYAN);
+    init_pair(13, COLOR_WHITE, COLOR_BLACK);
+    init_pair(14, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(15, COLOR_GREEN, COLOR_BLACK);
+    init_pair(16, COLOR_RED, COLOR_BLACK);
+    init_pair(17, COLOR_BLUE, COLOR_BLACK);
+    init_pair(18, COLOR_CYAN, COLOR_BLUE);
+    colorTitulo = 18;
+    colorSeleccion = 9;
+    colorNormal = 13;
+    colorBorde = 17;
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
@@ -60,13 +68,16 @@ void finalizar() {
 void dibujarMarco(const std::string& titulo) {
     int alto, ancho;
     getmaxyx(stdscr, alto, ancho);
-    
+
     attron(COLOR_PAIR(9));
     for (int x = 0; x < ancho - 1; x++) {
         mvaddch(0, x, ' ');
     }
+    for (int x = 0; x < ancho - 1; x++) {
+        mvaddch(1, x, ' ');
+    }
     attroff(COLOR_PAIR(9));
-    
+
     attron(COLOR_PAIR(colorBorde));
     for (int x = 0; x < ancho - 1; x++) {
         mvaddch(2, x, ACS_HLINE);
@@ -104,12 +115,17 @@ void esperarTecla(const std::string& mensaje) {
 }
 
 std::string inputString(const std::string& etiqueta, int maxLen) {
-    echo();
     int alto, ancho;
     getmaxyx(stdscr, alto, ancho);
+    clear();
+    dibujarMarco("Entrada de Datos");
     int fila = alto / 2;
-    mvprintw(fila, 1, "%s: ", etiqueta.c_str());
+    attron(COLOR_PAIR(colorTitulo) | A_BOLD);
+    mvprintw(fila - 1, 2, "%s:", etiqueta.c_str());
+    attroff(COLOR_PAIR(colorTitulo) | A_BOLD);
+    echo();
     char buffer[maxLen + 1];
+    memset(buffer, 0, maxLen + 1);
     getstr(buffer);
     noecho();
     return std::string(buffer);
@@ -117,7 +133,7 @@ std::string inputString(const std::string& etiqueta, int maxLen) {
 
 int inputInt(const std::string& etiqueta, int min, int max) {
     while (true) {
-        std::string res = inputString(etiqueta);
+        std::string res = inputString(etiqueta, 20);
         if (res.empty()) return 0;
         if (validarNumeroPositivo(res)) {
             int val = std::stoi(res);
@@ -133,7 +149,7 @@ int inputInt(const std::string& etiqueta, int min, int max) {
 
 double inputDouble(const std::string& etiqueta, double min, double max) {
     while (true) {
-        std::string res = inputString(etiqueta);
+        std::string res = inputString(etiqueta, 30);
         if (res.empty()) return 0.0;
         if (validarDecimal(res)) {
             double val = std::stod(res);
