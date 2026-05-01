@@ -31,6 +31,10 @@ public:
     bool importarJSON(const std::string& json);
     void vacuum();
     
+    // Backup methods
+    bool exportarBackup(const std::string& ruta);
+    bool importarBackup(const std::string& ruta);
+    
     // Transacciones para mejor rendimiento
     void iniciarTransaccion();
     void terminarTransaccion();

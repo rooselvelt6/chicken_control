@@ -2,6 +2,9 @@
 #include "../include/utils.h"
 #include <iostream>
 #include <cstring>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 BaseDatos* BaseDatos::instancia = nullptr;
 
@@ -384,6 +387,49 @@ void BaseDatos::actualizarSchema() {
             lote_id INTEGER REFERENCES lotes(id)
         ))",
 
+        // Usuarios
+        R"(CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            rol TEXT DEFAULT 'operador',
+            nombre_completo TEXT,
+            email TEXT,
+            telefono TEXT,
+            activo INTEGER DEFAULT 1,
+            ultimo_acceso TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        ))",
+
+        // Insumos
+        R"(CREATE TABLE IF NOT EXISTS insumos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            categoria TEXT NOT NULL,
+            descripcion TEXT,
+            cantidad INTEGER DEFAULT 0,
+            stock_minimo INTEGER DEFAULT 10,
+            unidad TEXT DEFAULT 'piezas',
+            precio_unitario REAL DEFAULT 0,
+            fecha_caducidad TEXT,
+            proveedor TEXT,
+            lote_compra TEXT,
+            activo INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        ))",
+
+        // Movimientos de insumos
+        R"(CREATE TABLE IF NOT EXISTS movimientos_insumos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            insumo_id INTEGER REFERENCES insumos(id),
+            tipo TEXT NOT NULL,
+            cantidad INTEGER DEFAULT 0,
+            motivo TEXT,
+            fecha TEXT DEFAULT CURRENT_TIMESTAMP,
+            usuario_id INTEGER DEFAULT -1,
+            observaciones TEXT
+        ))",
+
         // Agregar corral_id a lotes
         "ALTER TABLE lotes ADD COLUMN corral_id INTEGER REFERENCES corrales(id)"
     };
@@ -688,4 +734,60 @@ void BaseDatos::vacuum() {
     if (!abrir()) return;
     sqlite3_exec(db, "VACUUM", nullptr, nullptr, nullptr);
     std::cout << "Base de datos optimizada (VACUUM)" << std::endl;
+}
+bool BaseDatos::exportarBackup(const std::string& ruta) {
+    if (!abrir()) return false;
+    
+    std::string backup_path = ruta.empty() ? "datos/granja_backup.db" : ruta;
+    
+    sqlite3* backup_db;
+    if (sqlite3_open(backup_path.c_str(), &backup_db) != SQLITE_OK) {
+        std::cout << "Error al crear archivo de backup" << std::endl;
+        return false;
+    }
+    
+    sqlite3_backup* backup = sqlite3_backup_init(backup_db, "main", db, "main");
+    if (!backup) {
+        sqlite3_close(backup_db);
+        return false;
+    }
+    
+    int rc = sqlite3_backup_step(backup, -1);
+    sqlite3_backup_finish(backup);
+    
+    if (rc == SQLITE_DONE) {
+        std::cout << "Backup creado: " << backup_path << std::endl;
+        sqlite3_close(backup_db);
+        return true;
+    }
+    
+    sqlite3_close(backup_db);
+    std::cout << "Error al crear backup: " << rc << std::endl;
+    return false;
+}
+
+bool BaseDatos::importarBackup(const std::string& ruta) {
+    if (!fs::exists(ruta)) {
+        std::cout << "El archivo no existe: " << ruta << std::endl;
+        return false;
+    }
+    
+    // Cerrar conexión actual
+    if (db) {
+        sqlite3_close(db);
+        db = nullptr;
+    }
+    
+    // Reemplazar base de datos actual
+    try {
+        fs::copy_file(ruta, "datos/granja.db", fs::copy_options::overwrite_existing);
+        std::cout << "Backup restaurado desde: " << ruta << std::endl;
+        
+        // Reabrir base de datos
+        instancia = new BaseDatos();  // Esto recreará la instancia
+        return true;
+    } catch (...) {
+        std::cout << "Error al restaurar backup" << std::endl;
+        return false;
+    }
 }

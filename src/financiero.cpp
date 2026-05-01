@@ -9,6 +9,7 @@
 #include "../include/veterinaria.h"
 #include "../include/temperatura.h"
 #include "../include/servicios.h"
+#include "../include/pesaje.h"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -288,4 +289,102 @@ void Financiero::mostrarCostosPorLote() {
     }
 
     std::cout << "╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝" << std::endl;
+}
+// NEW: Costos por Etapa
+std::vector<CostoPorEtapa> Financiero::calcularCostosPorEtapa(int lote_id) {
+    std::vector<CostoPorEtapa> resultados;
+    
+    // Obtener información del lote
+    Lote* lote = Lotes::obtener(lote_id);
+    if (!lote) return resultados;
+    
+    // Definir etapas
+    std::vector<std::pair<Fase, std::string>> etapas = {
+        {Fase::Bebe, "Bebé (0-20 días)"},
+        {Fase::Intermedio, "Intermedio (21-40 días)"},
+        {Fase::Grande, "Grande (41+ días)"}
+    };
+    
+    for (const auto& [etapa, nombre] : etapas) {
+        CostoPorEtapa c;
+        c.etapa = etapa;
+        c.nombre_etapa = nombre;
+        
+        // Calcular días en esta etapa
+        c.dias_duracion = (etapa == Fase::Bebe) ? 20 : (etapa == Fase::Intermedio) ? 20 : 30;
+        
+        // Costos de alimento en esta etapa
+        auto consumos = Alimentacion::listarConsumo(lote_id);
+        for (const auto& con : consumos) {
+            // Simplificado: asumir que el alimento corresponde a la etapa actual
+            Alimento* alimento = Alimentacion::obtener(con.alimento_id);
+            if (alimento) {
+                c.costo_alimento += con.cantidad_sacos * alimento->precio_unitario;
+            }
+        }
+        
+        // Costos de mano de obra (simplificado)
+        c.costo_mano_obra = c.dias_duracion * 10.0;  // $10 por día
+        
+        // Costos de instalaciones (simplificado)
+        c.costo_instalaciones = c.dias_duracion * 5.0;  // $5 por día
+        
+        // Peso promedio en esta etapa
+        auto pesajes = Pesaje::listarPorLote(lote_id);
+        for (const auto& p : pesajes) {
+            if (p.semana * 7 >= c.dias_duracion - 7 && p.semana * 7 <= c.dias_duracion) {
+                c.peso_promedio = p.peso_promedio;
+            }
+        }
+        
+        // Calcular totales
+        c.costo_total = c.costo_alimento + c.costo_medicamentos + c.costo_mano_obra + c.costo_instalaciones;
+        c.costo_por_kg = (c.peso_promedio > 0) ? c.costo_total / c.peso_promedio : 0.0;
+        c.costo_por_dia = (c.dias_duracion > 0) ? c.costo_total / c.dias_duracion : 0.0;
+        
+        resultados.push_back(c);
+    }
+    
+    return resultados;
+}
+
+void Financiero::mostrarCostosPorEtapa(int lote_id) {
+    auto costos = calcularCostosPorEtapa(lote_id);
+    
+    std::cout << "\n╔════════════════════════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║          COSTOS POR ETAPA - LOTE #" << std::setw(3) << lote_id << "               ║" << std::endl;
+    std::cout << "╠════════════════════════════════════════════════════════════════╣" << std::endl;
+    
+    for (const auto& c : costos) {
+        std::cout << "║ " << std::setw(25) << std::left << c.nombre_etapa << " ║" << std::endl;
+        std::cout << "║   Días: " << c.dias_duracion << " │ Peso prom: " << std::fixed << std::setprecision(2) 
+                  << c.peso_promedio << " kg" << std::endl;
+        std::cout << "║   Alimento:   USD " << std::setw(10) << c.costo_alimento << " ║" << std::endl;
+        std::cout << "║   Medicamentos: USD " << std::setw(10) << c.costo_medicamentos << " ║" << std::endl;
+        std::cout << "║   Mano de obra: USD " << std::setw(10) << c.costo_mano_obra << " ║" << std::endl;
+        std::cout << "║   Instalaciones: USD " << std::setw(10) << c.costo_instalaciones << " ║" << std::endl;
+        std::cout << "║   TOTAL:       USD " << std::setw(10) << c.costo_total << " ║" << std::endl;
+        std::cout << "║   Costo/kg:    USD " << std::setw(10) << c.costo_por_kg << " ║" << std::endl;
+        std::cout << "╠════════════════════════════════════════════════════════════════╣" << std::endl;
+    }
+}
+
+CostoPorEtapa Financiero::costoEtapaLote(int lote_id, Fase etapa) {
+    auto costos = calcularCostosPorEtapa(lote_id);
+    for (const auto& c : costos) {
+        if (c.etapa == etapa) return c;
+    }
+    return CostoPorEtapa();
+}
+
+double Financiero::promedioCostoPorEtapa(int lote_id) {
+    auto costos = calcularCostosPorEtapa(lote_id);
+    if (costos.empty()) return 0.0;
+    
+    double total = 0.0;
+    for (const auto& c : costos) {
+        total += c.costo_total;
+    }
+    
+    return total / costos.size();
 }

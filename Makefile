@@ -2,7 +2,7 @@
 
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -Iinclude
-LDFLAGS = -lsqlite3 -lpthread -ldl -lncurses
+LDFLAGS = -lsqlite3 -lpthread -ldl -lncurses -lcrypto
 TEST_LDFLAGS = -lsqlite3 -lpthread -ldl
 
 SRC = src/main.cpp src/modelos.cpp src/utils.cpp src/base_datos.cpp \
@@ -13,7 +13,8 @@ SRC = src/main.cpp src/modelos.cpp src/utils.cpp src/base_datos.cpp \
       src/ui.cpp src/alertas.cpp src/facturacion.cpp \
       src/contenedores.cpp src/beneficio.cpp \
       src/dashboard.cpp src/empleados.cpp src/temperatura.cpp src/servicios.cpp \
-      src/financiero.cpp src/graficos.cpp src/reportes_txt.cpp
+      src/financiero.cpp src/graficos.cpp src/reportes_txt.cpp \
+      src/usuarios.cpp src/backup.cpp src/estadisticas.cpp src/inventario_insumos.cpp
 
 OBJ = $(SRC:.cpp=.o)
 TARGET = build/granja

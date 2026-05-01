@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include "modelos.h"
 
 struct MovimientoFinanciero {
     int id;
@@ -49,6 +50,20 @@ struct CostoPorLote {
     double rentabilidad_pct;
 };
 
+struct CostoPorEtapa {
+    Fase etapa;
+    std::string nombre_etapa;
+    double costo_alimento = 0.0;
+    double costo_medicamentos = 0.0;
+    double costo_mano_obra = 0.0;
+    double costo_instalaciones = 0.0;
+    double costo_total = 0.0;
+    double peso_promedio = 0.0;
+    int dias_duracion = 0;
+    double costo_por_kg = 0.0;
+    double costo_por_dia = 0.0;
+};
+
 class Financiero {
 public:
     static EstadoResultados calcularEstadoResultados(const std::string& fecha_inicio, const std::string& fecha_fin);
@@ -58,6 +73,13 @@ public:
     static double ingresoTotalLote(int lote_id);
     static double gastoTotalLote(int lote_id);
     static double profitMarginLote(int lote_id);
+    
+    // NEW: Costos por etapa
+    static std::vector<CostoPorEtapa> calcularCostosPorEtapa(int lote_id);
+    static void mostrarCostosPorEtapa(int lote_id);
+    static CostoPorEtapa costoEtapaLote(int lote_id, Fase etapa);
+    static double promedioCostoPorEtapa(int lote_id);
+    
     static void mostrarEstadoResultados(const std::string& fecha_inicio, const std::string& fecha_fin);
     static void mostrarFlujoCaja(int anio);
     static void mostrarCostosPorLote();

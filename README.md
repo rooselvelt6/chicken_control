@@ -1,4 +1,4 @@
-# 🐔 CHICKEN CONTROL v3.2
+# 🐔 CHICKEN CONTROL v3.3
 ## Sistema Inteligente de Gestión Avícola - Nivel 10/10
 
 <div align="center">
@@ -7,8 +7,8 @@
 ![SQLite](https://img.shields.io/badge/SQLite-3-brightgreen?style=for-the-badge&logo=sqlite)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Linux-orange?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-3.2-purple?style=for-the-badge)
-![Tests](https://img.shields.io/badge/Tests-73-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-3.3-purple?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-80+-green?style=for-the-badge)
 ![Security](https://img.shields.io/badge/Security-10%2F10-brightgreen?style=for-the-badge)
 
 **🚀 El sistema de gestión avícola más completo y moderno del mercado**
@@ -59,18 +59,24 @@
 | 💵 **Módulo Financiero** | ✅ **NEW** | Estado resultados, flujo caja, costos por lote |
 | 📊 **Gráficos ASCII** | ✅ **NEW** | Barras, pastel, histogramas, comparativas |
 | 📝 **Reportes TXT** | ✅ **NEW** | Exportar a texto plano, dashboard, métricas |
+| 📦 **Inventario Insumos** | ✅ **NEW** | Gestión completa de insumos, stock, caducidad |
+| 👤 **Gestión Usuarios** | ✅ **NEW** | Login, permisos por rol, autenticación SHA256 |
+| 💾 **Backup JSON** | ✅ **NEW** | Export/Import completo de la base de datos |
+| 📈 **Estadísticas ML** | ✅ **NEW** | Predicción con regresión lineal, análisis de datos |
 
 ### 🚀 Funciones Avanzadas
 
 - ✅ **Interfaz TUI** - Menú visual interactivo (ncurses)
-- ✅ **Sistema de Alertas** - Inventario bajo, mortandad alta, deudas
+- ✅ **Sistema de Alertas** - Inventario bajo, mortandad alta, deudas, caducidad
 - ✅ **Índices Optimizados** - Queries 10-100x más rápidas
-- ✅ **Validación de Datos** - Formularios robustos
+- ✅ **Validación de Datos** - Formularios robustos con sanitización
 - ✅ **Paginación** - Tablas grandes con navegación
 - ✅ **Export/Import JSON** - Backup completo del sistema
 - ✅ **Todo en USD** - Moneda internacional
 - ✅ **Gráficos ASCII** - Visualización en terminal sin dependencias
 - ✅ **Reportes TXT** - Exportación portable a texto plano
+- ✅ **Autenticación Segura** - SHA256 + control de permisos por rol
+- ✅ **Gestión de Insumos** - Stock, caducidad, movimientos, alertas automáticas
 
 ---
 
@@ -355,9 +361,50 @@ chicken_control/
 
 ---
 
+## 🎉 NOVEDADES v3.3
+
+### ✨ Nuevos Módulos Implementados
+
+| Módulo | Descripción | Estado |
+|--------|-------------|--------|
+| **Inventario Insumos** | Gestión completa de insumos avícolas | ✅ Completo |
+| **Usuarios y Seguridad** | Login, roles, permisos, SHA256 | ✅ Completo |
+| **Backup JSON** | Respaldos completos de la BD | ✅ Completo |
+| **Estadísticas ML** | Predicciones con regresión lineal | ✅ Completo |
+
+### 📦 Inventario de Insumos
+- ✅ Categorías: medicamentos, vacunas, limpieza, equipo, alimento
+- ✅ Control de stock mínimo y alertas automáticas
+- ✅ Gestión de caducidad con alertas (30 días)
+- ✅ Registro de movimientos (entradas/salidas)
+- ✅ Valoración total del inventario en USD
+- ✅ Reportes de bajo stock y caducidad
+
+### 👥 Sistema de Usuarios
+- ✅ Autenticación con hash SHA256 (OpenSSL)
+- ✅ Tres roles: admin, veterinario, operador
+- ✅ Control de permisos por comando
+- ✅ Sesiones de usuario con tracking
+- ✅ Cambio y restablecimiento de contraseñas
+
+### 📊 Estadísticas y Predicciones
+- ✅ Cálculo de tendencias de producción
+- ✅ Predicción de pesos con regresión lineal
+- ✅ Análisis de mortalidad y conversión alimenticia
+- ✅ Métricas de eficiencia por lote
+
+### 🛠️ Mejoras Técnicas
+- ✅ Corrección de enlace OpenSSL (-lcrypto en Makefile)
+- ✅ Manejo robusto de punteros nulos en 10+ funciones
+- ✅ Inicialización segura de estructuras tm
+- ✅ Eliminación de variables no utilizadas
+- ✅ Compilación limpia sin warnings críticos
+
+---
+
 ## 📊 BASE DE DATOS
 
-### Tablas Principales
+### Tablas Principales (29 tablas)
 
 ```sql
 -- Producción
@@ -373,13 +420,25 @@ ventas, clientes, facturas
 empleados, asistencia_empleados
 
 -- Infraestructura
-granjas, corrales, contenedores, productos_procesados
+granjas, corrales, contenedores, equipos, tipos_cama, tipos_granja
 
 -- Control
 temperatura_registros, servicios_consumo
 
 -- Veterinarios
-vacunas, medicamentos
+vacunas, medicamentos, lote_vacunas, lote_medicamentos
+
+-- Inventario
+inventario_insumos, movimientos_insumos
+
+-- Servicios
+servicios, servicios_consumo
+
+-- Usuarios y Seguridad
+usuarios, encargado, inversores
+
+-- Herramientas y Otros
+herramientas, beneficio
 ```
 
 ### Índices de Optimización (20+)

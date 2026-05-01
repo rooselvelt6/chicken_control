@@ -29,6 +29,10 @@
 #include "../include/financiero.h"
 #include "../include/graficos.h"
 #include "../include/reportes_txt.h"
+#include "../include/usuarios.h"
+#include "../include/backup.h"
+#include "../include/estadisticas.h"
+#include "../include/inventario_insumos.h"
 
 void mostrarAyuda() {
     std::cout << R"(
@@ -105,12 +109,37 @@ Comandos principales:
      estado <ini> <fin>    Estado de resultados
      flujo <año>           Flujo de caja
      costos-lote           Costos por lote
+     costos-etapa <lote_id> Costos por etapa
 
    grafico            - Gráficos ASCII
      ventas-mensuales <año>      Gráfico de ventas por mes
      crecimiento <lote_id>       Gráfico de crecimiento
      comparativo-lotes           Comparativa de lotes
      histograma-pesos <lote_id>  Histograma de pesos
+
+   usuario            - Gestión de usuarios
+     login <user> <pass>       Iniciar sesión
+     logout                    Cerrar sesión
+     listar                   Listar usuarios
+     agregar <user> <pass> <rol> <nombre>  Crear usuario
+
+   backup             - Backup y restauración
+     crear [ruta]             Crear backup
+     restaurar <ruta>          Restaurar backup
+     listar                   Listar backups
+     limpiar <dias>           Limpiar backups antiguos
+
+   estadisticas       - Análisis estadístico
+     prediccion-peso <lote>     Predecir peso
+     correlacion-temp-mort <lote>  Correlación temp-mortalidad
+     anomalias <lote>          Detectar anomalías
+
+   insumo             - Inventario de insumos
+     agregar <nombre> <cat> <cant> <un>  Agregar insumo
+     listar [categoria]        Listar insumos
+     consumir <id> <cant> <motivo>  Consumir insumo
+     bajo-stock               Ver bajo stock
+     caducidad                 Ver caducidad
 
 Ejemplos:
   ./granja ayuda
@@ -133,9 +162,14 @@ Ejemplos:
   ./granja reporte inventario
   ./granja reporte completo
   ./granja financiero estado 2024-01-01 2024-12-31
+  ./granja financiero costos-etapa 1
   ./granja grafico ventas-mensuales 2024
   ./granja grafico crecimiento 1
   ./granja reporte txt dashboard reporte.txt
+  ./granja usuario login admin mipassword
+  ./granja backup crear
+  ./granja estadisticas prediccion-peso 1
+  ./granja insumo listar
 )";
 }
 
@@ -707,30 +741,133 @@ int main(int argc, char* argv[]) {
              else if (tipo == "dashboard") ReportesTXT::exportarDashboard(archivo);
         }
     }
-    else if (cmd == "factura") {
+    else if (cmd == "usuario") {
         if (argc < 3) {
-            std::cout << "Uso: factura generar <venta_id> | ver <id> | listar | anular <id>" << std::endl;
+            std::cout << "Uso: usuario login <user> <pass> | logout | listar | agregar <user> <pass> <rol> <nombre>" << std::endl;
             return 0;
         }
         std::string sub = argv[2];
-        if (sub == "generar" && argc > 3) {
-            int venta_id = std::stoi(argv[3]);
-            std::string cedula = (argc > 4) ? argv[4] : "";
-            std::string direccion = (argc > 5) ? argv[5] : "";
-            int id = Facturacion::generarFactura(venta_id, cedula, direccion);
-            std::cout << "Factura #" << id << " generada" << std::endl;
+        if (sub == "login" && argc > 4) {
+            Usuarios::login(argv[3], argv[4]);
         }
-        else if (sub == "ver" && argc > 3) {
-            Facturacion::mostrarFactura(std::stoi(argv[3]));
+        else if (sub == "logout") {
+            Usuarios::logout();
+        }
+        else if (sub == "agregar" && argc > 6) {
+            Usuarios::agregar(argv[3], argv[4], argv[5], argv[6]);
         }
         else if (sub == "listar") {
-            for (auto& f : Facturacion::listarFacturas()) {
-                std::cout << f.numero_factura << " | " << f.cliente_nombre << " | USD " << std::fixed << std::setprecision(2) << f.total << " | " << (f.anulada ? "ANULADA" : "ACTIVA") << std::endl;
+            auto usuarios = Usuarios::listar();
+            for (const auto& u : usuarios) {
+                std::cout << "[" << u.id << "] " << u.username << " - " << u.rol 
+                          << " - " << u.nombre_completo << (u.activo ? "" : " (INACTIVO)") << std::endl;
             }
         }
-        else if (sub == "anular" && argc > 3) {
-            Facturacion::anularFactura(std::stoi(argv[3]));
-            std::cout << "Factura anulada" << std::endl;
+    }
+    else if (cmd == "backup") {
+        if (argc < 3) {
+            std::cout << "Uso: backup crear [ruta] | restaurar <ruta> | listar | limpiar <dias>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "crear") {
+            std::string ruta = (argc > 3) ? argv[3] : "";
+            Backup::crearBackup(ruta);
+        }
+        else if (sub == "restaurar" && argc > 3) {
+            Backup::restaurarBackup(argv[3]);
+        }
+        else if (sub == "listar") {
+            auto backups = Backup::listarBackups();
+            for (const auto& b : backups) {
+                std::cout << b.nombre_archivo << " - " << b.tamaño_bytes << " bytes" << std::endl;
+            }
+        }
+        else if (sub == "limpiar" && argc > 3) {
+            int dias = parsearIdSeguro(argv[3]);
+            if (dias > 0) Backup::limpiarBackupsAntiguos(dias);
+        }
+    }
+    else if (cmd == "estadisticas") {
+        if (argc < 3) {
+            std::cout << "Uso: estadisticas prediccion-peso <lote> | correlacion-temp-mort <lote> | anomalias <lote>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "prediccion-peso" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) {
+                auto pred = Estadisticas::predecirPeso(lote_id, 7);
+                std::cout << "Predicción de peso (7 días): " << std::fixed << std::setprecision(2) 
+                          << pred.valor_predicho << " kg (Confianza: " << pred.confianza << "%)" << std::endl;
+            }
+        }
+        else if (sub == "correlacion-temp-mort" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) {
+                auto analisis = Estadisticas::correlacionTemperaturaMortalidad(lote_id);
+                std::cout << "Correlación Temperatura-Mortalidad: " << analisis.coeficiente_correlacion 
+                          << " (" << analisis.interpretacion << ")" << std::endl;
+            }
+        }
+        else if (sub == "anomalias" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) {
+                Estadisticas::mostrarReporteEstadistico(lote_id);
+            }
+        }
+    }
+    else if (cmd == "insumo") {
+        if (argc < 3) {
+            std::cout << "Uso: insumo agregar <nombre> <categoria> <cantidad> <unidad> | listar [categoria] | consumir <id> <cantidad> <motivo>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "agregar" && argc > 6) {
+            int cantidad = parsearIdSeguro(argv[4]);
+            InventarioInsumos::agregar(argv[3], argv[4], cantidad, argv[6]);
+        }
+        else if (sub == "listar") {
+            std::string cat = (argc > 3) ? argv[3] : "";
+            auto insumos = InventarioInsumos::listar(cat);
+            for (const auto& i : insumos) {
+                std::cout << "[" << i.id << "] " << i.nombre << " - Stock: " << i.cantidad 
+                          << " " << i.unidad << " (" << InventarioInsumos::categoriaToString(i.categoria) << ")" << std::endl;
+            }
+        }
+        else if (sub == "consumir" && argc > 5) {
+            int id = parsearIdSeguro(argv[3]);
+            int cant = parsearIdSeguro(argv[4]);
+            if (id > 0 && cant > 0) {
+                InventarioInsumos::consumir(id, cant, argv[5]);
+            }
+        }
+        else if (sub == "bajo-stock") {
+            InventarioInsumos::reporteBajoStock();
+        }
+        else if (sub == "caducidad") {
+            InventarioInsumos::reporteCaducidad();
+        }
+    }
+    else if (cmd == "financiero") {
+        if (argc < 3) {
+            std::cout << "Uso: financiero estado <ini> <fin> | flujo <año> | costos-lote | costos-etapa <lote_id>" << std::endl;
+            return 0;
+        }
+        std::string sub = argv[2];
+        if (sub == "estado" && argc > 4) {
+            Financiero::mostrarEstadoResultados(argv[3], argv[4]);
+        }
+        else if (sub == "flujo" && argc > 3) {
+            int año = parsearIdSeguro(argv[3]);
+            if (año > 0) Financiero::mostrarFlujoCaja(año);
+        }
+        else if (sub == "costos-lote") {
+            Financiero::mostrarCostosPorLote();
+        }
+        else if (sub == "costos-etapa" && argc > 3) {
+            int lote_id = parsearIdSeguro(argv[3]);
+            if (lote_id > 0) Financiero::mostrarCostosPorEtapa(lote_id);
         }
     }
     else if (cmd == "contenedor") {
